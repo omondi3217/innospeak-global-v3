@@ -1,5 +1,6 @@
 import { getProgrammeByCode, getPathwayById } from './programmeData.js';
 import { getCourseGovernance } from './catalogPolicy.js';
+import { generateCourseDetail } from './courseDetailGenerator.js';
 
 /**
  * courseDetails — rich course data for the Course Details Template.
@@ -1140,6 +1141,7 @@ export function buildCourseData(code) {
   if (!base) return null;
 
   const detail = getCourseDetail(code);
+  const generated = detail ? null : generateCourseDetail(base);
   const pathway = getPathwayById(base.pathwayId);
   const governance = getCourseGovernance(base);
 
@@ -1168,28 +1170,23 @@ export function buildCourseData(code) {
     ...governance,
     status: governance.status === 'Active' ? 'Open for Applications' : governance.status,
 
-    // Rich detail (or generated defaults)
-    overview: detail?.overview || {
-      description: base.fullDescription,
-      targetAudience: 'Learners interested in this programme who meet the entry requirements.',
-      objectives: ['Develop core skills and knowledge in this subject area.'],
-      outcomes: ['Apply learned skills in professional or academic contexts.'],
-    },
-    languageOfInstruction: detail?.languageOfInstruction || base.language,
-    learningOutcomes: detail?.learningOutcomes || DEFAULT_OUTCOMES,
-    modules: detail?.modules || DEFAULT_MODULES,
-    entryRequirements: detail?.entryRequirements || base.entryRequirements,
-    assessment: detail?.assessment || DEFAULT_ASSESSMENT,
-    certificationItems: detail?.certification?.items || DEFAULT_CERT_ITEMS,
-    careers: detail?.careers || [
+    // Rich detail (hand-crafted, or generated from course data)
+    overview: detail?.overview || generated?.overview,
+    languageOfInstruction: detail?.languageOfInstruction || generated?.languageOfInstruction || base.language,
+    learningOutcomes: detail?.learningOutcomes || generated?.learningOutcomes || DEFAULT_OUTCOMES,
+    modules: detail?.modules || generated?.modules || DEFAULT_MODULES,
+    entryRequirements: detail?.entryRequirements || generated?.entryRequirements || base.entryRequirements,
+    assessment: detail?.assessment || generated?.assessment || DEFAULT_ASSESSMENT,
+    certificationItems: detail?.certification?.items || generated?.certification?.items || DEFAULT_CERT_ITEMS,
+    careers: detail?.careers || generated?.careers || [
       'Professional in the field',
       'Freelancer',
       'Entrepreneur',
       'Further study candidate',
     ],
-    relatedCourses: detail?.relatedCourses || [],
-    faqs: detail?.faqs || SHARED_FAQS,
-    reviews: detail?.reviews || DEFAULT_REVIEWS,
+    relatedCourses: detail?.relatedCourses || generated?.relatedCourses || [],
+    faqs: detail?.faqs || generated?.faqs || SHARED_FAQS,
+    reviews: detail?.reviews || generated?.reviews || DEFAULT_REVIEWS,
   };
 }
 

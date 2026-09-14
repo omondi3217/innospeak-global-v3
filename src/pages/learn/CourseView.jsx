@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle2, Circle, BookOpen, FileCheck2, ListChecks, Megaphone } from 'lucide-react';
+import { CheckCircle2, Circle, BookOpen, FileCheck2, ListChecks, Megaphone, ArrowLeft } from 'lucide-react';
 import Seo from '../../components/ui/Seo.jsx';
 import SectionCard from '../../components/portal/SectionCard.jsx';
 import { LoadingState, ErrorState } from '../../components/portal/PortalStates.jsx';
@@ -48,7 +48,11 @@ export default function CourseView() {
     <>
       <Seo title={state.course.title} description={state.course.description} path={`/learn/courses/${courseId}`} />
 
-      <div>
+      <Link to="/learn" className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-navy-500 hover:text-navy-800">
+        <ArrowLeft size={14} /> Back to Dashboard
+      </Link>
+
+      <div className="mt-4">
         <p className="font-body text-xs font-semibold uppercase tracking-wider text-gold-600">Learn</p>
         <h1 className="mt-1 font-display text-2xl font-bold text-navy-900 sm:text-3xl">{state.course.title}</h1>
         {state.course.description && <p className="mt-2 font-body text-sm text-navy-500">{state.course.description}</p>}

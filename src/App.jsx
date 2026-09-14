@@ -73,6 +73,7 @@ import SessionsManager from './pages/teach/SessionsManager.jsx';
 import Gradebook from './pages/teach/Gradebook.jsx';
 import LearnShell from './components/learn/LearnShell.jsx';
 import LearnDashboard from './pages/learn/LearnDashboard.jsx';
+import MyCourses from './pages/learn/MyCourses.jsx';
 import Catalog from './pages/learn/Catalog.jsx';
 import Sessions from './pages/learn/Sessions.jsx';
 import Calendar from './pages/learn/Calendar.jsx';
@@ -169,40 +170,45 @@ export default function App() {
             </Route>
           </Route>
 
-          {/* LMS — student learning (any authenticated user) */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/learn" element={<LearnShell />}>
-              <Route index element={<LearnDashboard />} />
-              <Route path="catalog" element={<Catalog />} />
-              <Route path="sessions" element={<Sessions />} />
-              <Route path="calendar" element={<Calendar />} />
-              <Route path="portfolio" element={<Portfolio />} />
-              <Route path="goals" element={<Goals />} />
-              <Route path="projects" element={<Projects />} />
-              <Route path="mentorship" element={<Mentorship />} />
-              <Route path="certificates" element={<Certificates />} />
-              <Route path="courses/:courseId" element={<CourseView />} />
-              <Route path="lessons/:lessonId" element={<LessonView />} />
-              <Route path="assignments/:assignmentId" element={<AssignmentView />} />
-              <Route path="quizzes/:quizId" element={<QuizAttempt />} />
-            </Route>
-          </Route>
-
-          {/* LMS — instructor teaching tools (instructor / lms_admin / admin) */}
-          <Route element={<InstructorRoute />}>
-            <Route path="/teach" element={<TeachShell />}>
-              <Route index element={<TeachDashboard />} />
-              <Route path="courses/:courseId" element={<CourseBuilder />} />
-              <Route path="courses/:courseId/submissions" element={<Submissions />} />
-              <Route path="courses/:courseId/gradebook" element={<Gradebook />} />
-              <Route path="sessions" element={<SessionsManager />} />
-              <Route path="quizzes/:quizId" element={<QuizEditor />} />
-            </Route>
-          </Route>
-
           <Route path="*" element={<NotFound />} />
+        </Route>
+
+        {/* LMS — student learning (any authenticated user). Own full-screen
+            app shell, deliberately NOT nested under AppLayout — no public
+            navbar/footer here. */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/learn" element={<LearnShell />}>
+            <Route index element={<LearnDashboard />} />
+            <Route path="courses" element={<MyCourses />} />
+            <Route path="catalog" element={<Catalog />} />
+            <Route path="sessions" element={<Sessions />} />
+            <Route path="calendar" element={<Calendar />} />
+            <Route path="portfolio" element={<Portfolio />} />
+            <Route path="goals" element={<Goals />} />
+            <Route path="projects" element={<Projects />} />
+            <Route path="mentorship" element={<Mentorship />} />
+            <Route path="certificates" element={<Certificates />} />
+            <Route path="courses/:courseId" element={<CourseView />} />
+            <Route path="lessons/:lessonId" element={<LessonView />} />
+            <Route path="assignments/:assignmentId" element={<AssignmentView />} />
+            <Route path="quizzes/:quizId" element={<QuizAttempt />} />
+          </Route>
+        </Route>
+
+        {/* LMS — instructor teaching tools (instructor / lms_admin / admin).
+            Same standalone treatment as /learn. */}
+        <Route element={<InstructorRoute />}>
+          <Route path="/teach" element={<TeachShell />}>
+            <Route index element={<TeachDashboard />} />
+            <Route path="courses/:courseId" element={<CourseBuilder />} />
+            <Route path="courses/:courseId/submissions" element={<Submissions />} />
+            <Route path="courses/:courseId/gradebook" element={<Gradebook />} />
+            <Route path="sessions" element={<SessionsManager />} />
+            <Route path="quizzes/:quizId" element={<QuizEditor />} />
+          </Route>
         </Route>
       </Routes>
     </AuthProvider>
+
   );
 }

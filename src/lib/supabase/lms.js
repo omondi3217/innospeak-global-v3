@@ -320,6 +320,59 @@ export async function gradeSubmission(submissionId, { score, feedback }) {
   return data;
 }
 
+// Aggregates published assignments across every course the student is
+// actively enrolled in, cross-referenced with their own submissions —
+// real data end-to-end, no fabricated deadlines or counts.
+export async function listMyUpcomingAssignments() {
+  assertConfigured();
+  const { data: authData } = await supabase.auth.getUser();
+  const uid = authData?.user?.id;
+  if (!uid) return [];
+
+  const { data: enrollments, error: eErr } = await supabase
+    .from('lms_enrollments')
+    .select('course_id')
+    .eq('student_id', uid)
+    .eq('status', 'active');
+  if (eErr) throw eErr;
+  const courseIds = [...new Set((enrollments || []).map((e) => e.course_id))];
+  if (courseIds.length === 0) return [];
+
+  const { data: modules, error: mErr } = await supabase
+    .from('modules')
+    .select('id, course_id, lms_courses(title)')
+    .in('course_id', courseIds);
+  if (mErr) throw mErr;
+  const moduleMap = Object.fromEntries((modules || []).map((m) => [m.id, m]));
+  const moduleIds = Object.keys(moduleMap);
+  if (moduleIds.length === 0) return [];
+
+  const { data: assignments, error: aErr } = await supabase
+    .from('assignments')
+    .select('*')
+    .in('module_id', moduleIds)
+    .eq('status', 'published')
+    .order('due_at', { ascending: true });
+  if (aErr) throw aErr;
+  const assignmentIds = (assignments || []).map((a) => a.id);
+
+  let submissions = [];
+  if (assignmentIds.length > 0) {
+    const { data: subs, error: sErr } = await supabase
+      .from('submissions')
+      .select('assignment_id, status, score')
+      .eq('student_id', uid)
+      .in('assignment_id', assignmentIds);
+    if (sErr) throw sErr;
+    submissions = subs || [];
+  }
+  const submittedIds = new Set(submissions.map((s) => s.assignment_id));
+
+  return (assignments || [])
+    .filter((a) => !submittedIds.has(a.id))
+    .map((a) => ({ ...a, course_title: moduleMap[a.module_id]?.lms_courses?.title || 'Course' }));
+}
+
 // ============================================================
 // Quizzes
 // ============================================================
@@ -505,7 +558,7 @@ export async function setDiscussionState(discussionId, fields) {
 // ============================================================
 export async function listCourseAnnouncements(courseId) {
   assertConfigured();
-  const { data, error } = await supabase.from('announcements').select('*').eq('course_id', courseId).order('created_at', { ascending: false });
+  const { data, error } = await supabase.from('lms_announcements').select('*').eq('course_id', courseId).order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
 }
@@ -514,7 +567,7 @@ export async function createAnnouncement(courseId, { title, body }) {
   assertConfigured();
   const { data: authData } = await supabase.auth.getUser();
   const uid = authData?.user?.id;
-  const { data, error } = await supabase.from('announcements').insert([{ course_id: courseId, author_id: uid, title, body }]).select().single();
+  const { data, error } = await supabase.from('lms_announcements').insert([{ course_id: courseId, author_id: uid, title, body }]).select().single();
   if (error) throw error;
   return data;
 }

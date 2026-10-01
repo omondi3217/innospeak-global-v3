@@ -118,9 +118,9 @@ export default function LabsCourseCatalogue() {
                         {course.name}
                       </h4>
 
-                      {course.description && (
+                      {course.shortDescription && (
                         <p className="mt-2 line-clamp-2 text-sm leading-5 text-gray-500">
-                          {course.description}
+                          {course.shortDescription}
                         </p>
                       )}
 

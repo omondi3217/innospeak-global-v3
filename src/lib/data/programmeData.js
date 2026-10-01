@@ -10,7 +10,7 @@
 
 import { NEW_LABS_COURSES } from './labsCourses.js';
 import { migrateCourses, filterArchived } from './courseMigration.js';
-import { NEW_ACADEMY_COURSES } from './newCourses.js';
+import { NEW_ACADEMY_COURSES, NEW_LABS_TRACK_COURSES } from './newCourses.js';
 import { EXPANSION_ACADEMY_COURSES } from './expansionCourses.js';
 
 export const ACADEMY = 'InnoSpeak Academy';
@@ -3354,6 +3354,7 @@ export const COURSES = filterArchived(
   migrateCourses([
     ..._BASE_COURSES,
     ...NEW_LABS_COURSES,
+    ...NEW_LABS_TRACK_COURSES,
     ...NEW_ACADEMY_COURSES,
     ...EXPANSION_ACADEMY_COURSES,
   ])

@@ -24,10 +24,10 @@ export default function LabsHero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 rounded-full border border-gold-500/20 bg-gold-500/10 px-4 py-2"
+              className="inline-flex items-center gap-2 rounded-full border border-gold-500/30 bg-gold-500/10 px-4 py-2 backdrop-blur-sm"
             >
-              <Sparkles size={16} className="text-gold-500" />
-              <span className="font-body text-xs font-semibold uppercase tracking-wider text-gold-700">
+              <Sparkles size={16} className="text-gold-400" />
+              <span className="font-body text-xs font-semibold uppercase tracking-wider text-gold-300">
                 {LABS_HERO_BADGE}
               </span>
             </motion.div>

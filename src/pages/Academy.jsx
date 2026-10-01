@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import Seo from '../components/ui/Seo.jsx';
 import AcademyHero from '../components/sections/academy/AcademyHero.jsx';
 import AboutAcademy from '../components/sections/academy/AboutAcademy.jsx';
@@ -17,19 +17,24 @@ import FinalCTA from '../components/sections/academy/FinalCTA.jsx';
 
 export default function Academy() {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
 
   useEffect(() => {
+    const hash = location.hash.replace('#', '');
     const pathway = searchParams.get('pathway');
+    const targetId = hash || pathway;
+
+    if (!targetId) return;
 
     const timer = setTimeout(() => {
-      document.getElementById(pathway)?.scrollIntoView({
+      document.getElementById(targetId)?.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
       });
-    }, 150);
+    }, 200);
 
     return () => clearTimeout(timer);
-  }, [searchParams]);
+  }, [searchParams, location.hash]);
 
   return (
     <>

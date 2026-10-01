@@ -36,7 +36,7 @@ export default function EntrepreneurshipInnovation() {
           eyebrow="Entrepreneurship & Innovation"
           title="Build Something Real"
           subtitle="Labs is where ideas become products. Whether you are launching a startup or building a portfolio, the innovation framework supports your journey from concept to showcase."
-          dark
+          light
         />
 
         <motion.div

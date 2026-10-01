@@ -19,19 +19,28 @@ function assertConfigured() {
  * Create a pending payment record in the database.
  * The edge function will update it after provider confirmation.
  */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function createPendingPayment({ courseId, courseCode, amount, currency, provider, phone }) {
   assertConfigured();
   const { data: authData } = await supabase.auth.getUser();
   const uid = authData?.user?.id;
   if (!uid) throw new Error('You must be logged in to make a payment.');
 
+  // payments.course_id is a uuid column, but catalogue courses are
+  // identified by a text code (e.g. "DA5-101") and may not have an
+  // lms_courses row yet. Passing a code here would fail with a Postgres
+  // type error, so only set course_id when we genuinely have a UUID —
+  // course_code is the column that always carries the catalogue code.
+  const resolvedCourseId = UUID_RE.test(String(courseId || '')) ? courseId : null;
+
   const { data, error } = await supabase
     .from('payments')
     .insert([
       {
         student_id: uid,
-        course_id: courseId,
-        course_code: courseCode,
+        course_id: resolvedCourseId,
+        course_code: courseCode || (UUID_RE.test(String(courseId || '')) ? null : courseId) || null,
         amount,
         currency,
         provider,
@@ -127,12 +136,15 @@ export async function listMyPayments() {
 /**
  * Check if a student has a paid payment for a course.
  */
-export async function checkCoursePaid(courseId) {
+export async function checkCoursePaid(courseRef) {
   assertConfigured();
+  // Accepts either an lms_courses UUID or a catalogue course code —
+  // matches on whichever column actually holds that kind of value.
+  const column = UUID_RE.test(String(courseRef || '')) ? 'course_id' : 'course_code';
   const { data, error } = await supabase
     .from('payments')
     .select('id, status')
-    .eq('course_id', courseId)
+    .eq(column, courseRef)
     .eq('status', 'paid')
     .maybeSingle();
   if (error) throw error;

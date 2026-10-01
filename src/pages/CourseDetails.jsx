@@ -2,6 +2,7 @@ import { useParams, Navigate } from 'react-router-dom';
 import useDocumentTitle from '../lib/hooks/useDocumentTitle';
 import { buildCourseData } from '../lib/data/courseDetails';
 import CourseHero from '../components/sections/course/CourseHero';
+import EnrollButton from '../components/portal/EnrollButton';
 import CourseOverview from '../components/sections/course/CourseOverview';
 import KeyInfoCards from '../components/sections/course/KeyInfoCards';
 import LearningOutcomes from '../components/sections/course/LearningOutcomes';
@@ -36,6 +37,13 @@ export default function CourseDetails() {
   return (
     <>
       <CourseHero course={course} />
+
+      {/* Enrollment / checkout entry point. Free courses enroll directly;
+          paid courses open the M-PESA / PayPal CheckoutModal. */}
+      <section className="bg-cream px-5 pt-10 sm:px-8">
+        <EnrollButton course={course} />
+      </section>
+
       <CourseOverview course={course} />
       <KeyInfoCards course={course} />
       <LearningOutcomes course={course} />

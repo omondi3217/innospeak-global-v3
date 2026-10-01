@@ -1,27 +1,25 @@
 import { motion } from 'framer-motion';
-import { GraduationCap, FlaskConical, Check, BookOpen, Cpu } from 'lucide-react';
+import { GraduationCap, FlaskConical, School, Check, BookOpen, Cpu } from 'lucide-react';
 import { SelectField } from '../../ui';
 import StepCard from '../StepCard';
 import {
-  ACADEMY,
+  COURSES,
   PATHWAYS,
-  PROGRAMMES,
+  TRACKS,
   INTAKES,
   STUDY_MODES,
-  getAcademyPathways,
-  getLabsCourses,
-  getAcademyCourses,
 } from '../../../lib/data/programmeData';
-import { LAB_SCHOOLS } from '../../../lib/data/labsData';
+import { GRADE_BUNDLES } from '../../../lib/data/gradeBundles';
 
+// The two real divisions. CBE is a section INSIDE Academy, not a separate one.
 const DIVISIONS = [
   {
     id: 'academy',
     label: 'InnoSpeak Global Academy',
     icon: GraduationCap,
-    tagline: 'Structured Professional Learning',
+    tagline: 'Structured Learning & Certification',
     description:
-      'Academic, professional and structured learning. Courses, programs, skills and certification.',
+      'Academic, professional and structured learning. Regular courses plus the CBE Academy for Grades 3–12.',
     accent: 'from-gold-500/15 to-gold-400/5',
     border: 'border-gold-500/40',
     iconBg: 'bg-gold-gradient',
@@ -39,36 +37,45 @@ const DIVISIONS = [
   },
 ];
 
-/**
- * Step1Programme — division + programme selection step.
- *
- * Applicants first choose between Academy and Labs using selectable cards.
- * The pathway and programme dropdowns then filter to show only courses
- * for the selected division. If the learner arrived via an Apply button
- * on a specific programme, fields are pre-filled.
- */
+// CBE pathway id — used to hide it from the regular pathway dropdown
+// so it doesn't compete with the CBE section below.
+const CBE_PATHWAY_ID = 'kenya-curriculum-tvet';
+
 export default function Step1Programme({ data, errors, update }) {
   const isAcademy = data.division === 'academy';
   const isLabs = data.division === 'labs';
 
-  const availablePathways = isAcademy
-    ? getAcademyPathways()
-    : isLabs
-      ? LAB_SCHOOLS.map((s) => ({ id: s.id, title: s.title }))
-      : [];
-
-  const availableProgrammes = data.pathway
-    ? PROGRAMMES.filter((p) => p.pathwayId === data.pathway)
+  // Regular pathways only (CBE handled separately below).
+  const regularPathways = isAcademy
+    ? PATHWAYS.filter((p) => p.id !== CBE_PATHWAY_ID)
     : [];
 
+  const labsTracks = isLabs ? TRACKS : [];
+
+  // Courses inside the currently selected pathway or track.
+  const availableCourses = data.pathway
+    ? COURSES.filter((c) => c.pathwayId === data.pathway)
+    : [];
+
+  const availableGrades = GRADE_BUNDLES;
+
+  // Which Academy sub-route is the applicant on?
+  // 'regular' | 'cbe' | null — inferred from what they've selected.
+  const academyRoute = isAcademy
+    ? data.grade
+      ? 'cbe'
+      : data.courseCode
+        ? 'regular'
+        : null
+    : null;
+
   function handleDivisionChange(divisionId) {
-    const division = DIVISIONS.find((d) => d.id === divisionId);
     update({
       division: divisionId,
-      academy: division ? division.label : '',
       pathway: '',
       programme: '',
       courseCode: '',
+      grade: '',
       duration: '',
       studyMode: '',
       fees: '',
@@ -80,34 +87,52 @@ export default function Step1Programme({ data, errors, update }) {
       pathway: e.target.value,
       programme: '',
       courseCode: '',
+      grade: '',
       duration: '',
       studyMode: '',
       fees: '',
     });
   }
 
-  function handleProgrammeChange(e) {
+  function handleCourseChange(e) {
     const code = e.target.value;
-    const programme = PROGRAMMES.find((p) => p.code === code);
-    if (programme) {
-      update({
-        programme: programme.name,
-        courseCode: code,
-        pathway: programme.pathwayId,
-        duration: programme.duration,
-        studyMode: programme.studyMode,
-        fees: programme.fees,
-      });
-    }
+    const course = COURSES.find((c) => c.code === code);
+    if (!course) return;
+    update({
+      programme: course.name,
+      courseCode: course.code,
+      pathway: course.pathwayId,
+      grade: '',
+      duration: course.duration,
+      studyMode: course.studyMode,
+      fees: course.isFree
+        ? 'Free'
+        : course.fees || `KES ${(course.feesUSD || 0) * 130}`,
+    });
+  }
+
+  function handleGradeChange(e) {
+    const code = e.target.value;
+    const grade = GRADE_BUNDLES.find((g) => g.code === code);
+    if (!grade) return;
+    update({
+      grade: grade.code,
+      programme: grade.title,
+      courseCode: grade.code,
+      pathway: CBE_PATHWAY_ID,
+      duration: grade.duration,
+      studyMode: 'Hybrid',
+      fees: `$${grade.feesUSD}`,
+    });
   }
 
   return (
     <StepCard
       stepNum={1}
       title="Choose Your Pathway"
-      description="Select your InnoSpeak Global division, then pick your programme, intake and study mode. If you came from a specific programme, these may already be filled in."
+      description="Select your InnoSpeak Global division, then pick your route. Academy applicants choose between a regular program or the CBE Academy (Grades 3–12). Labs applicants pick a track."
     >
-      {/* Pre-filled info banner */}
+      {/* Pre-filled banner */}
       {data.courseCode && (
         <div className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border border-gold-500/30 bg-gold-500/5 px-5 py-4">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-gold-700">
@@ -118,7 +143,7 @@ export default function Step1Programme({ data, errors, update }) {
         </div>
       )}
 
-      {/* Division selection cards */}
+      {/* ── Division cards ─────────────────────────────── */}
       <div>
         <p className="mb-4 font-body text-sm font-bold tracking-wide text-navy-900">
           Which division are you applying to?
@@ -131,7 +156,6 @@ export default function Step1Programme({ data, errors, update }) {
           {DIVISIONS.map((div) => {
             const selected = data.division === div.id;
             const Icon = div.icon;
-
             return (
               <button
                 key={div.id}
@@ -143,7 +167,6 @@ export default function Step1Programme({ data, errors, update }) {
                     : 'border-navy-100 bg-white hover:border-gold-300 hover:shadow-md'
                 }`}
               >
-                {/* Selected checkmark */}
                 {selected && (
                   <motion.div
                     initial={{ scale: 0 }}
@@ -153,7 +176,6 @@ export default function Step1Programme({ data, errors, update }) {
                     <Check size={16} strokeWidth={3} />
                   </motion.div>
                 )}
-
                 <div className="flex items-start gap-4">
                   <div
                     className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${div.iconBg} text-white shadow-md`}
@@ -161,9 +183,7 @@ export default function Step1Programme({ data, errors, update }) {
                     <Icon size={24} />
                   </div>
                   <div>
-                    <h3 className="font-display text-lg font-bold text-navy-900">
-                      {div.label}
-                    </h3>
+                    <h3 className="font-display text-lg font-bold text-navy-900">{div.label}</h3>
                     <p className="mt-0.5 font-body text-xs font-semibold uppercase tracking-wider text-gold-700">
                       {div.tagline}
                     </p>
@@ -178,48 +198,204 @@ export default function Step1Programme({ data, errors, update }) {
         </div>
       </div>
 
-      {/* Pathway + Programme + Intake + Study Mode (only after division selected) */}
-      {data.division && (
+      {/* ── Academy: two sections ─────────────────────── */}
+      {isAcademy && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
           className="overflow-hidden"
         >
-          <div className="h-px bg-gradient-to-r from-gold-300/60 via-navy-100 to-transparent" />
+          <div className="mt-6 h-px bg-gradient-to-r from-gold-300/60 via-navy-100 to-transparent" />
 
-          <div className="pt-6">
-            <p className="mb-4 flex items-center gap-2 font-body text-sm font-bold tracking-wide text-navy-900">
-              {isAcademy ? <BookOpen size={16} className="text-gold-600" /> : <Cpu size={16} className="text-gold-600" />}
-              {isAcademy ? 'Choose your Academy programme' : 'Choose your Labs school'}
+          <div className="space-y-6 pt-6">
+            <p className="font-body text-sm text-navy-600">
+              Academy has two routes. Pick whichever matches you — you can only
+              enroll in one at a time.
+            </p>
+
+            {/* ═══ SECTION A — Regular Programs & Courses ═══ */}
+            <section
+              className={`rounded-2xl border-2 p-5 transition-all duration-300 ${
+                academyRoute === 'cbe'
+                  ? 'border-navy-100 bg-navy-50/40 opacity-60'
+                  : academyRoute === 'regular'
+                    ? 'border-gold-400/60 bg-white shadow-premium'
+                    : 'border-navy-100 bg-white'
+              }`}
+            >
+              <header className="mb-5 flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-gradient text-navy-900">
+                  <BookOpen size={20} />
+                </div>
+                <div>
+                  <h3 className="font-display text-base font-bold text-navy-900">
+                    Programs & Courses
+                  </h3>
+                  <p className="mt-0.5 font-body text-xs text-navy-600">
+                    For adult learners, professionals and anyone not in Grade 3–12.
+                  </p>
+                </div>
+              </header>
+
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <SelectField
+                  label="Pathway"
+                  name="pathway"
+                  value={academyRoute === 'cbe' ? '' : data.pathway}
+                  onChange={handlePathwayChange}
+                  error={academyRoute === 'regular' ? errors.pathway : ''}
+                  placeholder="Select a pathway..."
+                  options={regularPathways.map((p) => ({
+                    value: p.id,
+                    label: p.title,
+                  }))}
+                  className="sm:col-span-2"
+                  disabled={academyRoute === 'cbe'}
+                />
+
+                <SelectField
+                  label="Course"
+                  name="programme"
+                  value={academyRoute === 'cbe' ? '' : data.courseCode}
+                  onChange={handleCourseChange}
+                  error={academyRoute === 'regular' ? errors.programme : ''}
+                  placeholder={
+                    data.pathway && academyRoute !== 'cbe'
+                      ? 'Select a course...'
+                      : 'Select a pathway first'
+                  }
+                  options={availableCourses.map((c) => ({
+                    value: c.code,
+                    label: c.isFree
+                      ? `${c.code} — ${c.name} (Free)`
+                      : `${c.code} — ${c.name}`,
+                  }))}
+                  className="sm:col-span-2"
+                  disabled={academyRoute === 'cbe' || !data.pathway}
+                />
+              </div>
+            </section>
+
+            {/* ═══ SECTION B — CBE Academy ═══ */}
+            <section
+              className={`rounded-2xl border-2 p-5 transition-all duration-300 ${
+                academyRoute === 'regular'
+                  ? 'border-navy-100 bg-navy-50/40 opacity-60'
+                  : academyRoute === 'cbe'
+                    ? 'border-emerald-400/60 bg-white shadow-premium'
+                    : 'border-navy-100 bg-white'
+              }`}
+            >
+              <header className="mb-5 flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white">
+                  <School size={20} />
+                </div>
+                <div>
+                  <h3 className="font-display text-base font-bold text-navy-900">
+                    CBE Academy — Grades 3 to 12
+                  </h3>
+                  <p className="mt-0.5 font-body text-xs text-navy-600">
+                    Kenya Competency Based Curriculum. One payment covers every subject for the selected grade.
+                  </p>
+                </div>
+              </header>
+
+              <SelectField
+                label="Grade"
+                name="grade"
+                value={academyRoute === 'regular' ? '' : data.grade}
+                onChange={handleGradeChange}
+                error={academyRoute === 'cbe' ? errors.grade || errors.programme : ''}
+                placeholder="Select a grade (Grade 3 – Grade 12)..."
+                options={availableGrades.map((g) => ({
+                  value: g.code,
+                  label: `${g.title} — ${g.subjects.length} subjects — $${g.feesUSD}`,
+                }))}
+                disabled={academyRoute === 'regular'}
+              />
+
+              {academyRoute === 'cbe' && data.grade && (
+                <p className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 font-body text-xs leading-relaxed text-emerald-800">
+                  <strong>Grade enrollment:</strong> instructors load lesson
+                  content into the LMS after you submit your application.
+                </p>
+              )}
+            </section>
+
+            {/* Intake + Study Mode (shared by both Academy sections) */}
+            {academyRoute && (
+              <div className="grid grid-cols-1 gap-5 rounded-2xl border border-navy-100 bg-white p-5 sm:grid-cols-2">
+                <SelectField
+                  label="Intake"
+                  name="intake"
+                  value={data.intake}
+                  onChange={(e) => update({ intake: e.target.value })}
+                  error={errors.intake}
+                  required
+                  placeholder="Select intake..."
+                  options={INTAKES}
+                />
+
+                <SelectField
+                  label="Study Mode"
+                  name="studyMode"
+                  value={data.studyMode}
+                  onChange={(e) => update({ studyMode: e.target.value })}
+                  error={errors.studyMode}
+                  required
+                  placeholder="Select study mode..."
+                  options={STUDY_MODES}
+                />
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* ── Labs: track → course ──────────────────────── */}
+      {isLabs && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="overflow-hidden"
+        >
+          <div className="mt-6 h-px bg-gradient-to-r from-gold-300/60 via-navy-100 to-transparent" />
+
+          <div className="space-y-5 pt-6">
+            <p className="flex items-center gap-2 font-body text-sm font-bold tracking-wide text-navy-900">
+              <Cpu size={16} className="text-gold-600" />
+              Choose your Labs track
             </p>
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <SelectField
-                label={isAcademy ? 'Programme' : 'Lab School'}
+                label="Track"
                 name="pathway"
                 value={data.pathway}
                 onChange={handlePathwayChange}
                 error={errors.pathway}
                 required
-                placeholder={isAcademy ? 'Select a programme...' : 'Select a lab school...'}
-                options={availablePathways.map((p) => ({
-                  value: p.id,
-                  label: p.title,
+                placeholder="Select a track..."
+                options={labsTracks.map((t) => ({
+                  value: t.id,
+                  label: t.title,
                 }))}
+                className="sm:col-span-2"
               />
 
               <SelectField
                 label="Course"
                 name="programme"
                 value={data.courseCode}
-                onChange={handleProgrammeChange}
+                onChange={handleCourseChange}
                 error={errors.programme}
                 required
-                placeholder="Select a course..."
-                options={availableProgrammes.map((p) => ({
-                  value: p.code,
-                  label: `${p.code} — ${p.name}`,
+                placeholder={data.pathway ? 'Select a course...' : 'Select a track first'}
+                options={availableCourses.map((c) => ({
+                  value: c.code,
+                  label: `${c.code} — ${c.name}`,
                 }))}
                 className="sm:col-span-2"
               />
@@ -246,32 +422,38 @@ export default function Step1Programme({ data, errors, update }) {
                 options={STUDY_MODES}
               />
             </div>
-
-            {/* Auto-filled summary */}
-            {(data.duration || data.fees) && (
-              <div className="mt-6 grid grid-cols-2 gap-4 rounded-2xl bg-cream px-5 py-4 sm:grid-cols-3">
-                {data.duration && (
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wider text-navy-600">Duration</p>
-                    <p className="mt-1 text-sm font-bold text-navy-900">{data.duration}</p>
-                  </div>
-                )}
-                {data.fees && (
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wider text-navy-600">Fees</p>
-                    <p className="mt-1 text-sm font-bold text-navy-900">{data.fees}</p>
-                  </div>
-                )}
-                {data.courseCode && (
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wider text-navy-600">Course Code</p>
-                    <p className="mt-1 text-sm font-bold text-navy-900">{data.courseCode}</p>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </motion.div>
+      )}
+
+      {/* ── Auto-filled summary (all divisions) ───────── */}
+      {(data.duration || data.fees) && (
+        <div className="mt-6 grid grid-cols-2 gap-4 rounded-2xl bg-cream px-5 py-4 sm:grid-cols-3">
+          {data.duration && (
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-navy-600">
+                Duration
+              </p>
+              <p className="mt-1 text-sm font-bold text-navy-900">{data.duration}</p>
+            </div>
+          )}
+          {data.fees && (
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-navy-600">
+                Fees
+              </p>
+              <p className="mt-1 text-sm font-bold text-navy-900">{data.fees}</p>
+            </div>
+          )}
+          {data.courseCode && (
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-navy-600">
+                {data.grade ? 'Grade' : 'Course Code'}
+              </p>
+              <p className="mt-1 text-sm font-bold text-navy-900">{data.courseCode}</p>
+            </div>
+          )}
+        </div>
       )}
     </StepCard>
   );

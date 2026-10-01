@@ -16,6 +16,9 @@ export default function ClosingCTA() {
       {/* Navy-to-deep-blue gradient base */}
       <div className="absolute inset-0 bg-gradient-to-b from-navy-900 via-navy-800 to-navy-950" />
 
+      {/* Soft fade from the white FAQ section above, instead of a hard color cut */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/30 to-transparent sm:h-32" />
+
       {/* Soft gold radial glow */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-500/10 blur-[120px]" />
 

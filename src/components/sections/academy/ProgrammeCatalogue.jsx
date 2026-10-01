@@ -1,382 +1,285 @@
-import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, BookOpen, GraduationCap, Clock, BarChart3, MonitorPlay } from 'lucide-react';
+import { COURSES, PATHWAYS } from '../../../lib/data/programmeData.js';
 
-import { Search, SlidersHorizontal, X, Grid3x3 as Grid3X3, ArrowRight } from 'lucide-react';
+const PATHWAY_ICONS = {
+  'english-communication': '💬',
+  'world-languages': '🌍',
+  'international-qualifications': '🎓',
+  'kenya-curriculum-tvet': '📘',
+  'digital-skills-productivity': '💻',
+  'creative-design-media': '🎨',
+  'business-entrepreneurship': '💼',
+  'freelancing-remote-work': '🌐',
+  'career-global': '🚀',
+  'education-teaching-training': '👨‍🏫',
+  'health-hospitality-community': '🏥',
+  'personal-life-skills': '🌱',
+};
 
-import SectionHeading from '../../ui/SectionHeading.jsx';
-import CourseCard from './CourseCard';
-
-import useFavourites from '../../../lib/hooks/useFavourites';
-
-import {
-  COURSES,
-  PATHWAYS,
-  LEVELS,
-  STUDY_MODES,
-  DURATIONS,
-  parseFee,
-  getAcademyCourses,
-} from '../../../lib/data/programmeData';
-
-import {
-  staggerContainer,
-  fadeUpItem,
-  inViewOnce,
-} from '../../../lib/motion/presets';
-
-/**
- * ProgrammeCatalogue — search/filter/sort UI restyled on the verified
- * live Home patterns: ui/SectionHeading for the header, container-premium,
- * the navy-900/gold-500 token scale, and the same rounded-2xl /
- * shadow-premium card recipe used by CourseCard and the Home page cards.
- * All state, filtering, sorting and favouriting logic is unchanged.
- */
-
-const container = staggerContainer(0.08, 0.05);
-
-const SORT_OPTIONS = [
-  { value: 'featured', label: 'Featured' },
-  { value: 'newest', label: 'Newest' },
-  { value: 'alphabetical', label: 'A–Z' },
-  { value: 'price-low', label: 'Price ↑' },
-  { value: 'price-high', label: 'Price ↓' },
-];
-
-function matchesPrice(fee, range) {
-  if (range === 'all') return true;
-  const [min, max] = range.split('-').map(Number);
-  const amount = parseFee(fee);
-  return amount >= min && amount <= max;
-}
-
-/**
- * normalizeCourse — defensively fills in fallback values for any course
- * record that might be missing fields, so a malformed entry in COURSES
- * never breaks the render.
- */
-function normalizeCourse(course, index) {
-  return {
-    ...course,
-    code: course.code || course.courseCode || course.id || `COURSE-${index + 1}`,
-    name:
-      course.name ||
-      course.title ||
-      course.programmeName ||
-      course.programme ||
-      'Untitled programme',
-    shortDescription:
-      course.shortDescription ||
-      course.description ||
-      course.summary ||
-      course.overview ||
-      'Explore the course overview, learning outcomes and pathway details.',
-    category:
-      course.category ||
-      course.pathway ||
-      course.pathwayTitle ||
-      course.area ||
-      '',
-    pathwayId:
-      course.pathwayId ||
-      course.pathway_id ||
-      course.pathway ||
-      course.pathwaySlug ||
-      '',
-    level: course.level || course.levelLabel || course.difficulty || 'Flexible',
-    studyMode: course.studyMode || course.mode || course.deliveryMode || 'Flexible',
-    duration: course.duration || course.length || course.durationText || 'Flexible',
-    fees: course.fees ?? course.price ?? course.fee ?? 'Contact us',
-    certification:
-      course.certification ||
-      course.certificate ||
-      course.outcome ||
-      'Certificate available',
-    language: course.language || course.languages || '',
-    featured: Boolean(course.featured),
-    createdAt: course.createdAt || course.created_at || course.publishedAt || '',
-  };
-}
+const CBE_PLACEHOLDER_CODES = ['CBP101', 'CBJ101', 'CBS101'];
 
 export default function ProgrammeCatalogue() {
-  const { toggle, isFavourite } = useFavourites();
-
-  const [search, setSearch] = useState('');
-
-  const [filters, setFilters] = useState({
-    pathway: '',
-    level: '',
-    studyMode: '',
-    duration: '',
-    price: 'all',
-  });
-
-  const [sortBy, setSortBy] = useState('featured');
-
-  const [showFilters, setShowFilters] = useState(false);
-
-  const normalizedCourses = useMemo(
-    () => getAcademyCourses().map((course, index) => normalizeCourse(course, index)),
+  const academyCourses = useMemo(
+    () => COURSES.filter((course) => course.division === 'academy'),
     []
   );
 
-  const filteredCourses = useMemo(() => {
-    let results = [...normalizedCourses];
-
-    // Search
-    if (search.trim()) {
-      const query = search.toLowerCase();
-      results = results.filter((course) =>
-        [
-          course.name,
-          course.code,
-          course.shortDescription,
-          course.category,
-          course.language,
-        ]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase()
-          .includes(query)
-      );
-    }
-
-    // Pathway
-    if (filters.pathway) {
-      results = results.filter((course) => course.pathwayId === filters.pathway);
-    }
-
-    // Level
-    if (filters.level) {
-      results = results.filter((course) => course.level === filters.level);
-    }
-
-    // Study Mode
-    if (filters.studyMode) {
-      results = results.filter((course) => course.studyMode === filters.studyMode);
-    }
-
-    // Duration
-    if (filters.duration) {
-      results = results.filter((course) => course.duration === filters.duration);
-    }
-
-    // Sorting
-    switch (sortBy) {
-      case 'alphabetical':
-        results.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-
-      case 'price-low':
-        results.sort((a, b) => parseFee(a.fees) - parseFee(b.fees));
-        break;
-
-      case 'price-high':
-        results.sort((a, b) => parseFee(b.fees) - parseFee(a.fees));
-        break;
-
-      case 'newest':
-        results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        break;
-
-      default:
-        results.sort((a, b) => {
-          if (a.featured && !b.featured) return -1;
-          if (!a.featured && b.featured) return 1;
-          return a.name.localeCompare(b.name);
-        });
-    }
-
-    return results;
-  }, [normalizedCourses, search, filters, sortBy]);
-
-  const clearFilters = () => {
-    setSearch('');
-    setFilters({
-      pathway: '',
-      level: '',
-      studyMode: '',
-      duration: '',
-      price: 'all',
-    });
-    setSortBy('featured');
-  };
+  const pathways = useMemo(
+    () => PATHWAYS.filter((pathway) => pathway.division === 'academy'),
+    []
+  );
 
   return (
-    <section id="programme-catalogue" className="bg-cream py-20 sm:py-24">
-      <div className="container-premium">
-        <SectionHeading
-          eyebrow="Explore Learning Pathways"
-          title={
-            <>
-              Discover Programmes Designed
-              <span className="block text-gradient-gold">For Global Opportunities</span>
-            </>
-          }
-          subtitle="Browse our internationally focused learning pathways. Whether you are preparing for global careers, university, freelancing, engineering, business or language mastery, InnoSpeak Global Academy has a programme for you."
-        />
+    <section className="relative overflow-hidden bg-white py-16 sm:py-20 lg:py-24">
+      {/* Decorative blurs */}
+      <div className="pointer-events-none absolute left-0 top-0 h-72 w-72 rounded-full bg-gold-500/5 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 top-40 h-80 w-80 rounded-full bg-navy-900/5 blur-3xl" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={inViewOnce}
-          transition={{ duration: 0.5 }}
-          className="mt-12 rounded-2xl border border-navy-100 bg-white p-6 shadow-premium"
-        >
-          <div className="flex flex-col gap-4 lg:flex-row">
-            <div className="relative flex-1">
-              <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-navy-400" />
-              <input
-                type="text"
-                placeholder="Search programmes, languages, certifications..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-14 w-full rounded-2xl border border-navy-100 bg-white pl-14 pr-5 font-body text-sm text-navy-900 outline-none transition-colors duration-300 placeholder:text-navy-400 focus:border-gold-500 focus:ring-4 focus:ring-gold-500/20"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowFilters(!showFilters)}
-              className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-navy-100 px-6 font-body font-semibold text-navy-900 transition-colors duration-300 hover:border-gold-500 hover:text-gold-600"
-            >
-              <SlidersHorizontal size={18} />
-              Filters
-            </button>
-          </div>
+      <div className="relative mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+        {/* ── Section heading ─────────────────────────────── */}
+        <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-14 lg:mb-16">
+          <span className="eyebrow inline-flex items-center gap-2">
+            <BookOpen size={14} aria-hidden="true" />
+            InnoSpeak Academy
+          </span>
 
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="overflow-hidden"
+          <h2 className="mt-5 font-display text-3xl font-bold tracking-tight text-navy-900 sm:text-4xl lg:text-5xl">
+            Learn by <span className="text-gradient-gold">Pathway</span>
+          </h2>
+
+          <p className="mx-auto mt-4 max-w-2xl font-body text-base leading-7 text-navy-600 sm:mt-5 sm:text-lg">
+            Explore practical courses designed to build communication,
+            professional, digital, business, creative and career-ready skills.
+          </p>
+        </div>
+
+        {/* ── Pathways list ───────────────────────────────── */}
+        <div className="space-y-8 sm:space-y-10 lg:space-y-12">
+          {pathways.map((pathway) => {
+            const courses = academyCourses.filter((course) => {
+              if (course.pathwayId !== pathway.id) return false;
+              if (pathway.id === 'kenya-curriculum-tvet') {
+                return CBE_PLACEHOLDER_CODES.indexOf(course.code) === -1;
+              }
+              return true;
+            });
+
+            if (!courses.length) return null;
+
+            const isCbePathway = pathway.id === 'kenya-curriculum-tvet';
+            const levels = [...new Set(courses.map((c) => c.level).filter(Boolean))].slice(0, 3);
+
+            return (
+              <article
+                key={pathway.id}
+                id={pathway.id}
+                className="overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-premium transition-shadow duration-300 hover:shadow-premium-lg sm:rounded-3xl"
               >
-                <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-                  <div>
-                    <label className="mb-2 block font-body text-sm font-semibold text-navy-900">Learning Pathway</label>
-                    <select
-                      value={filters.pathway}
-                      onChange={(e) => setFilters({ ...filters, pathway: e.target.value })}
-                      className="w-full rounded-xl border border-navy-100 bg-white px-4 py-3 font-body text-sm text-navy-900 outline-none transition-colors duration-300 focus:border-gold-500 focus:ring-4 focus:ring-gold-500/20"
-                    >
-                      <option value="">All Pathways</option>
-                      {PATHWAYS.map((pathway) => (
-                        <option key={pathway.id} value={pathway.id}>
+                {/* ═══ Pathway header ═══════════════════════════ */}
+                <header className="relative overflow-hidden bg-navy-gradient px-5 py-7 sm:px-8 sm:py-8 lg:px-10 lg:py-9">
+                  <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-gold-500/10 blur-3xl" />
+
+                  <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                    {/* Left: icon + text block */}
+                    <div className="flex min-w-0 flex-1 items-start gap-4 sm:gap-5">
+                      {/* Icon */}
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold-gradient text-2xl shadow-gold sm:h-14 sm:w-14 sm:text-3xl">
+                        {PATHWAY_ICONS[pathway.id] || '📚'}
+                      </div>
+
+                      {/* Text block */}
+                      <div className="min-w-0 flex-1">
+                        {/* Badge row */}
+                        <div className="mb-2 flex flex-wrap items-center gap-1.5 sm:mb-3 sm:gap-2">
+                          <span className="rounded-full bg-white/10 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-gold-300 ring-1 ring-white/15">
+                            {pathway.code}
+                          </span>
+                          <span className="rounded-full bg-white/10 px-2.5 py-1 font-body text-[10px] font-bold uppercase tracking-wider text-white/85 ring-1 ring-white/15">
+                            {courses.length} {courses.length === 1 ? 'course' : 'courses'}
+                          </span>
+                          {levels.map((lvl) => (
+                            <span
+                              key={lvl}
+                              className="hidden rounded-full bg-white/5 px-2.5 py-1 font-body text-[10px] font-medium text-white/70 ring-1 ring-white/10 sm:inline-flex"
+                            >
+                              {lvl}
+                            </span>
+                          ))}
+                        </div>
+
+                        <h3 className="font-display text-lg font-bold tracking-tight text-white sm:text-xl lg:text-2xl">
                           {pathway.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                        </h3>
 
-                  <div>
-                    <label className="mb-2 block font-body text-sm font-semibold text-navy-900">Level</label>
-                    <select
-                      value={filters.level}
-                      onChange={(e) => setFilters({ ...filters, level: e.target.value })}
-                      className="w-full rounded-xl border border-navy-100 bg-white px-4 py-3 font-body text-sm text-navy-900 outline-none transition-colors duration-300 focus:border-gold-500 focus:ring-4 focus:ring-gold-500/20"
-                    >
-                      <option value="">All Levels</option>
-                      {LEVELS.map((level) => (
-                        <option key={level}>{level}</option>
-                      ))}
-                    </select>
-                  </div>
+                        <p className="mt-1.5 max-w-2xl font-body text-xs leading-5 text-navy-100 sm:mt-2 sm:text-sm sm:leading-6">
+                          {pathway.shortDescription}
+                        </p>
+                      </div>
+                    </div>
 
-                  <div>
-                    <label className="mb-2 block font-body text-sm font-semibold text-navy-900">Study Mode</label>
-                    <select
-                      value={filters.studyMode}
-                      onChange={(e) => setFilters({ ...filters, studyMode: e.target.value })}
-                      className="w-full rounded-xl border border-navy-100 bg-white px-4 py-3 font-body text-sm text-navy-900 outline-none transition-colors duration-300 focus:border-gold-500 focus:ring-4 focus:ring-gold-500/20"
-                    >
-                      <option value="">All Modes</option>
-                      {STUDY_MODES.map((mode) => (
-                        <option key={mode}>{mode}</option>
-                      ))}
-                    </select>
+                    {/* Right: CTA */}
+                    <div className="flex shrink-0 items-center lg:self-center">
+                      <Link
+                        to={`/courses?pathway=${pathway.id}`}
+                        className="btn-gold inline-flex w-full items-center justify-center gap-2 px-5 py-3 text-sm lg:w-auto"
+                      >
+                        Explore pathway
+                        <ArrowRight size={16} aria-hidden="true" />
+                      </Link>
+                    </div>
                   </div>
+                </header>
 
-                  <div>
-                    <label className="mb-2 block font-body text-sm font-semibold text-navy-900">Duration</label>
-                    <select
-                      value={filters.duration}
-                      onChange={(e) => setFilters({ ...filters, duration: e.target.value })}
-                      className="w-full rounded-xl border border-navy-100 bg-white px-4 py-3 font-body text-sm text-navy-900 outline-none transition-colors duration-300 focus:border-gold-500 focus:ring-4 focus:ring-gold-500/20"
-                    >
-                      <option value="">All Durations</option>
-                      {DURATIONS.map((duration) => (
-                        <option key={duration}>{duration}</option>
-                      ))}
-                    </select>
+                {/* ═══ CBE callout ═════════════════════════════ */}
+                {isCbePathway && (
+                  <div className="border-b border-navy-100 bg-gold-50/60 px-5 py-5 sm:px-8 sm:py-6 lg:px-10">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+                      <div className="flex items-start gap-3 sm:gap-4">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-gradient text-navy-900 shadow-gold">
+                          <GraduationCap size={20} strokeWidth={1.9} aria-hidden="true" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-display text-sm font-bold text-navy-900 sm:text-base">
+                            CBE / CBC Grades 3–12
+                          </p>
+                          <p className="mt-1 font-body text-xs leading-5 text-navy-600 sm:text-sm sm:leading-6">
+                            Full-grade enrollment with all subjects, electives and one certificate per grade.
+                            Managed through the dedicated CBE Academy.
+                          </p>
+                        </div>
+                      </div>
+                      <Link
+                        to="/academy#cbe-academy"
+                        className="inline-flex shrink-0 items-center justify-center gap-1 rounded-xl bg-navy-900 px-4 py-2.5 font-body text-xs font-bold text-white transition-colors hover:bg-navy-800 sm:text-sm"
+                      >
+                        Explore CBE Academy
+                        <ArrowRight size={14} aria-hidden="true" />
+                      </Link>
+                    </div>
                   </div>
+                )}
+
+                {/* ═══ Course grid ═════════════════════════════ */}
+                <div className="grid gap-4 p-5 sm:grid-cols-2 sm:gap-5 sm:p-6 lg:grid-cols-3 lg:gap-6 lg:p-8">
+                  {courses.slice(0, 6).map((course) => (
+                    <CourseTile key={course.code} course={course} />
+                  ))}
                 </div>
 
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-                  <div className="font-body text-sm text-navy-600">
-                    Showing
-                    <span className="mx-1 font-bold text-navy-900">{filteredCourses.length}</span>
-                    programmes
+                {/* ═══ View all footer ═════════════════════════ */}
+                {courses.length > 6 && (
+                  <div className="border-t border-navy-100 bg-cream/60 px-5 py-4 text-center sm:px-8 sm:py-5 lg:px-10">
+                    <Link
+                      to={`/courses?pathway=${pathway.id}`}
+                      className="inline-flex items-center gap-1 font-body text-sm font-bold text-navy-900 transition-colors hover:text-gold-700"
+                    >
+                      View all {courses.length} courses in this pathway
+                      <ArrowRight size={15} aria-hidden="true" />
+                    </Link>
                   </div>
-                  <button
-                    onClick={clearFilters}
-                    className="inline-flex items-center gap-2 rounded-full border border-red-200 px-5 py-2 font-body text-sm font-semibold text-red-600 transition-colors duration-300 hover:bg-red-50"
-                  >
-                    <X size={16} />
-                    Clear Filters
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+                )}
+              </article>
+            );
+          })}
+        </div>
 
-        <div className="mt-14">
-          <div className="mb-8 flex items-center justify-between">
-            <div>
-              <h3 className="font-display text-2xl font-bold text-navy-900">Available Programmes</h3>
-              <p className="mt-1 font-body text-navy-600">Explore our globally competitive learning opportunities.</p>
-            </div>
-            <div className="hidden items-center gap-2 rounded-full bg-navy-900 px-5 py-2 text-gold-400 md:flex">
-              <Grid3X3 size={18} />
-              <span className="font-body font-semibold">{filteredCourses.length} Courses</span>
-            </div>
-          </div>
+        {/* ── Section footer CTAs ─────────────────────────── */}
+        <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:mt-14 sm:flex-row sm:gap-4 lg:mt-16">
+          <Link
+            to="/courses"
+            className="btn-gold inline-flex w-full items-center justify-center gap-2 px-7 py-3 sm:w-auto"
+          >
+            View All Courses
+            <ArrowRight size={17} aria-hidden="true" />
+          </Link>
 
-          {filteredCourses.length > 0 ? (
-            <motion.div
-              variants={container}
-              initial="hidden"
-              whileInView="visible"
-              viewport={inViewOnce}
-              className="grid gap-8 md:grid-cols-2 xl:grid-cols-3"
-            >
-              {filteredCourses.map((course, index) => (
-                <motion.div key={course.code} variants={fadeUpItem}>
-                  <CourseCard
-                    course={course}
-                    index={index}
-                    isFavourite={isFavourite(course.code)}
-                    onToggleFavourite={() => toggle(course.code)}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-navy-200 bg-white py-20 text-center">
-              <h3 className="font-display text-2xl font-bold text-navy-900">No programmes found</h3>
-              <p className="mt-4 font-body text-navy-600">Try changing your search or clearing the filters.</p>
-              <button
-                onClick={clearFilters}
-                className="mt-8 inline-flex items-center gap-2 rounded-full bg-gold-gradient px-6 py-3 font-body font-semibold text-navy-900 transition-transform duration-300 hover:scale-105"
-              >
-                <ArrowRight size={18} />
-                Show All Courses
-              </button>
-            </div>
-          )}
+          <Link
+            to="/academy#cbe-academy"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-navy-200 bg-white px-7 py-3 font-body text-sm font-bold text-navy-900 shadow-premium transition-all duration-300 hover:border-gold-400 hover:text-gold-700 hover:shadow-premium-lg sm:w-auto"
+          >
+            Explore CBE Academy
+            <GraduationCap size={17} aria-hidden="true" />
+          </Link>
         </div>
       </div>
     </section>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Course tile — responsive padding, clean hierarchy
+   ══════════════════════════════════════════════════════════════ */
+function CourseTile({ course }) {
+  const isFree = course.isFree === true;
+
+  return (
+    <Link
+      to={`/courses/${course.code}`}
+      className="group/course relative flex h-full flex-col rounded-2xl border border-navy-100 bg-white p-4 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:border-gold-300 hover:shadow-premium-lg sm:p-5"
+    >
+      {/* Top row: code + featured pill */}
+      <div className="flex items-start justify-between gap-2">
+        <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-navy-400">
+          {course.code}
+        </span>
+        {course.featured && (
+          <span className="shrink-0 rounded-full bg-gold-500/10 px-2 py-0.5 font-body text-[10px] font-bold uppercase tracking-wide text-gold-700 ring-1 ring-gold-500/20">
+            Featured
+          </span>
+        )}
+      </div>
+
+      {/* Title */}
+      <h4 className="mt-3 font-display text-base font-bold leading-6 text-navy-900 transition-colors duration-200 group-hover/course:text-gold-700">
+        {course.name}
+      </h4>
+
+      {/* Description */}
+      {course.shortDescription && (
+        <p className="mt-2 line-clamp-2 font-body text-sm leading-6 text-navy-600">
+          {course.shortDescription}
+        </p>
+      )}
+
+      {/* Meta chips */}
+      <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 font-body text-[11px] text-navy-500">
+        {course.duration && (
+          <span className="inline-flex items-center gap-1">
+            <Clock size={12} aria-hidden="true" />
+            {course.duration}
+          </span>
+        )}
+        {course.level && (
+          <span className="inline-flex items-center gap-1">
+            <BarChart3 size={12} aria-hidden="true" />
+            {course.level}
+          </span>
+        )}
+        {course.studyMode && (
+          <span className="inline-flex items-center gap-1">
+            <MonitorPlay size={12} aria-hidden="true" />
+            {course.studyMode}
+          </span>
+        )}
+      </div>
+
+      {/* Footer: price + view */}
+      <div className="mt-auto flex items-center justify-between border-t border-navy-100 pt-4">
+        <span
+          className={`font-body text-sm font-bold ${
+            isFree ? 'text-emerald-600' : 'text-navy-900'
+          }`}
+        >
+          {isFree ? 'Free' : course.fees || 'View fees'}
+        </span>
+
+        <span className="inline-flex items-center gap-1 font-body text-sm font-bold text-navy-900 transition-all duration-300 group-hover/course:translate-x-1 group-hover/course:text-gold-700">
+          View course
+          <ArrowRight size={14} aria-hidden="true" />
+        </span>
+      </div>
+    </Link>
   );
 }

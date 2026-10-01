@@ -10,8 +10,7 @@
 
 import { NEW_LABS_COURSES } from './labsCourses.js';
 import { migrateCourses, filterArchived } from './courseMigration.js';
-import { NEW_ACADEMY_COURSES } from './newCourses.js';
-import { EXPANSION_ACADEMY_COURSES } from './expansionCourses.js';
+import { NEW_ACADEMY_COURSES, NEW_LABS_TRACK_COURSES } from './newCourses.js';
 
 export const ACADEMY = 'InnoSpeak Academy';
 export const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
@@ -19,8 +18,8 @@ export const STUDY_MODES = ['Online', 'Hybrid', 'Physical / Hybrid', 'Physical']
 export const DURATIONS = ['2 Weeks', '3 Weeks', '4 Weeks', '6 Weeks', '8 Weeks', '10 Weeks', '12 Weeks', '16 Weeks'];
 
 // ── PATHWAYS now comes from the V3 registry ──────────────────
-import { PATHWAYS, TRACKS } from './registry.js';
-export { PATHWAYS, TRACKS };
+import { PATHWAYS } from './registry.js';
+export { PATHWAYS };
 
 // ── BASE COURSES (migrated at export time) ───────────────────
 const _BASE_COURSES = [
@@ -3354,8 +3353,8 @@ export const COURSES = filterArchived(
   migrateCourses([
     ..._BASE_COURSES,
     ...NEW_LABS_COURSES,
+    ...NEW_LABS_TRACK_COURSES,
     ...NEW_ACADEMY_COURSES,
-    ...EXPANSION_ACADEMY_COURSES,
   ])
 );
 
@@ -3420,11 +3419,9 @@ export function getAcademyPathways() {
 
 // ── Programs Academic Foundation helpers ─────────────────────
 
-/** Look up a program (Academy pathway OR Labs track) by its slug. */
+/** Look up a program (pathway) by its slug. */
 export function getProgramBySlug(slug) {
-  return PATHWAYS.find((p) => p.slug === slug)
-      || TRACKS.find((t) => t.slug === slug)
-      || null;
+  return PATHWAYS.find((p) => p.slug === slug) || null;
 }
 
 /** Programs appropriate for public display. */

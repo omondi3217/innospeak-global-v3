@@ -115,7 +115,7 @@ function SchoolCard({ school, isOpen, onToggle }) {
 }
 
 export default function LabTracks() {
-  const [openId, setOpenId] = useState('school-ai');
+  const [openId, setOpenId] = useState('ai-intelligent-systems');
 
   return (
     <section className="bg-cream py-20 md:py-28">

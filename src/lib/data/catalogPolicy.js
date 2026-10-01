@@ -1,10 +1,5 @@
 import { COURSES } from './programmeData.js';
 
-/**
- * Catalogue governance helpers. Course codes are permanent internal identifiers;
- * curriculum content is versioned/reviewed independently so the catalogue can
- * evolve without breaking historical enrolments.
- */
 export const CATALOG_STATUS = Object.freeze({
   ACTIVE: 'Active',
   PLANNED: 'Planned',
@@ -37,7 +32,7 @@ export function getCourseGovernance(course) {
   return {
     status: course.status || CATALOG_STATUS.ACTIVE,
     version: course.version || '1.0',
-    lastReviewed: course.lastReviewed || '2026-09-01',
+    lastReviewed: course.lastReviewed || '2026-09-24',
     nextReview: course.nextReview || (technologyHeavy || examSensitive ? '2027-09-01' : '2028-09-01'),
     reviewRequired: technologyHeavy || examSensitive,
     regulatedReview: /TVET|KNEC|KCSE|KCPE|qualification/i.test(`${course.name} ${course.category}`),
@@ -61,5 +56,25 @@ export function validateCatalogue(courses = COURSES) {
     duplicates: [...new Set(duplicates)],
     missingRequiredFields: [...new Set(missing)],
     futureProof: duplicates.length === 0 && missing.length === 0,
+  };
+}
+
+export function validateV3Fields(courses = []) {
+  const VALID_DIVISIONS = new Set(['academy','labs','foundation']);
+  const missingDivision = [];
+  const invalidDivision = [];
+  const missingGroupingCode = [];
+
+  for (const c of courses) {
+    if (!c.division) missingDivision.push(c.code);
+    else if (!VALID_DIVISIONS.has(c.division)) invalidDivision.push(c.code);
+    if (!c.groupingCode) missingGroupingCode.push(c.code);
+  }
+  return {
+    total: courses.length,
+    missingDivision: [...new Set(missingDivision)],
+    invalidDivision: [...new Set(invalidDivision)],
+    missingGroupingCode: [...new Set(missingGroupingCode)],
+    complete: missingDivision.length === 0 && invalidDivision.length === 0,
   };
 }

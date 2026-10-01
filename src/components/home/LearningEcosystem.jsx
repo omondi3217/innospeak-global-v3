@@ -13,8 +13,11 @@ const items = [
 
 export default function LearningEcosystem() {
   return (
-    <section className="bg-navy-950 py-20 text-white sm:py-24">
-      <div className="container-premium">
+    <section className="relative overflow-hidden bg-navy-950 py-20 text-white sm:py-24">
+      {/* Soft fade from the cream section above, instead of a hard color cut */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-cream/40 to-transparent sm:h-32" />
+
+      <div className="container-premium relative z-10">
         <SectionHeading eyebrow="One connected learning ecosystem" title="Not just courses. A complete learner journey." subtitle="InnoSpeak connects discovery, learning, practical work, assessment, evidence and career development in one platform." light />
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map(([title, text, to, Icon]) => (
@@ -27,6 +30,9 @@ export default function LearningEcosystem() {
           ))}
         </div>
       </div>
+
+      {/* Soft fade into the cream section below */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-cream/40 to-transparent sm:h-32" />
     </section>
   );
 }

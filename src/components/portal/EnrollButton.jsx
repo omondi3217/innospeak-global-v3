@@ -117,12 +117,15 @@ export default function EnrollButton({ course }) {
             <CircleCheck size={18} />
           </span>
           <p className="font-body text-sm text-navy-800">
-            You&rsquo;re enrolled &middot; {enrollment?.progress_percent || 0}% complete
+            {enrollment ? 'You\u2019re enrolled in this course.' : 'Payment confirmed \u2014 your enrollment is being activated.'}
           </p>
         </div>
-        <Link to={`/portal/courses/${course.code}`} className="btn-outline shrink-0 whitespace-nowrap">
-  Continue Learning
-</Link>
+        <Link
+          to={enrollment?.courseId ? `/learn/courses/${enrollment.courseId}` : '/learn'}
+          className="btn-outline shrink-0 whitespace-nowrap"
+        >
+          Continue Learning
+        </Link>
       </div>
     );
   }

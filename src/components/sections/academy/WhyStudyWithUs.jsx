@@ -14,7 +14,6 @@ import { staggerContainer, fadeUpItem, inViewOnce } from '../../../lib/motion/pr
  * WhyStudyWithUs — six premium feature cards.
  *
  * Same premium-card recipe as AboutAcademy/Certification, plus the
- * decorative corner index number from LearningPathways/PathwayCard
  * (font-display text-navy-100). The cards previously had no motion
  * wrapper, so the imported stagger animation never actually ran on
  * them — wired that up here with fadeUpItem, same as every other

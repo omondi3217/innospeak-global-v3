@@ -3,30 +3,15 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
-  BookOpen,
-  Clock3,
   Search,
-  Sparkles,
   GraduationCap,
   FlaskConical,
   HeartHandshake,
-  Layers3,
-  Award,
-  MonitorPlay,
+  BookOpen,
 } from 'lucide-react';
 import Seo from '../components/ui/Seo.jsx';
-import {
-  COURSES,
-  getVisiblePrograms,
-  getAcademyPathways,
-  getLabsCourses,
-} from '../lib/data/programmeData.js';
-import { LAB_SCHOOLS } from '../lib/data/labsData.js';
-
-const academyPathways = getAcademyPathways();
-const labsSchools = LAB_SCHOOLS;
-
-const ALL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'All Levels'];
+import { COURSES, getCoursesByPathway } from '../lib/data/programmeData.js';
+import { PATHWAYS, TRACKS } from '../lib/data/registry.js';
 
 const PILLARS = [
   {
@@ -79,52 +64,59 @@ const DIVISION_FILTERS = [
 export default function Programs() {
   const [query, setQuery] = useState('');
   const [division, setDivision] = useState('all');
-  const [category, setCategory] = useState('all');
-  const [level, setLevel] = useState('all');
 
-  // Build category list from visible programs
-  const categories = useMemo(() => {
-    const set = new Set();
-    COURSES.forEach((c) => {
-      if (c.category) set.add(c.category);
-    });
-    return Array.from(set).sort();
-  }, []);
-
-  // Flatten all courses with their pathway info for filtering
-  const allCourses = useMemo(() => {
-    return COURSES.map((c) => {
-      const pathway =
-        academyPathways.find((p) => p.id === c.pathwayId) ||
-        labsSchools.find((s) => s.id === c.pathwayId);
+  // ── Build the 19 programs (12 Academy pathways + 7 Labs tracks) ──
+  const programs = useMemo(() => {
+    const academyPrograms = PATHWAYS.map((p) => {
+      const courses = getCoursesByPathway(p.id);
       return {
-        ...c,
-        pathwayTitle: pathway?.title || c.category || 'General',
-        pillar: c.pillar || 'academy',
+        id: p.id,
+        code: p.code,
+        slug: p.slug,
+        title: p.title,
+        description: p.shortDescription,
+        division: 'academy',
+        courseCount: courses.length,
+        levels: [...new Set(courses.map((c) => c.level).filter(Boolean))].slice(0, 3),
+        studyModes: [...new Set(courses.map((c) => c.studyMode).filter(Boolean))].slice(0, 2),
       };
     });
+
+    const labsPrograms = TRACKS.map((t) => {
+      const courses = getCoursesByPathway(t.id);
+      return {
+        id: t.id,
+        code: t.code,
+        slug: t.slug,
+        title: t.title,
+        description: t.shortDescription,
+        division: 'labs',
+        courseCount: courses.length,
+        levels: [...new Set(courses.map((c) => c.level).filter(Boolean))].slice(0, 3),
+        studyModes: [...new Set(courses.map((c) => c.studyMode).filter(Boolean))].slice(0, 2),
+      };
+    });
+
+    return [...academyPrograms, ...labsPrograms];
   }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return allCourses.filter((c) => {
-      if (division !== 'all' && c.pillar !== division) return false;
-      if (category !== 'all' && c.category !== category) return false;
-      if (level !== 'all' && c.level !== level) return false;
-      if (q && !`${c.name} ${c.shortDescription} ${c.category} ${c.code}`.toLowerCase().includes(q))
-        return false;
+    return programs.filter((p) => {
+      if (division !== 'all' && p.division !== division) return false;
+      if (q && !`${p.title} ${p.description} ${p.code}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [allCourses, division, category, level, query]);
+  }, [programs, division, query]);
 
-  const academyCount = allCourses.filter((c) => c.pillar === 'academy').length;
-  const labsCount = allCourses.filter((c) => c.pillar === 'labs').length;
+  const academyCount = programs.filter((p) => p.division === 'academy').length;
+  const labsCount = programs.filter((p) => p.division === 'labs').length;
 
   return (
     <>
       <Seo
         title="Programs — Learn. Build. Innovate."
-        description="Explore the pathways within the InnoSpeak Global ecosystem — structured learning, practical innovation, and educational support."
+        description="Explore the 19 programs within the InnoSpeak Global ecosystem — 12 Academy pathways and 7 Labs tracks."
         path="/programs"
       />
 
@@ -143,13 +135,12 @@ export default function Programs() {
           />
         </div>
         <div className="pointer-events-none absolute -top-24 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-gold-500/15 blur-[120px]" />
-        <div className="pointer-events-none absolute bottom-0 right-0 h-72 w-72 rounded-full bg-navy-500/15 blur-[100px]" />
 
         <div className="container-premium relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.6 }}
             className="mx-auto max-w-3xl text-center"
           >
             <span className="eyebrow">The InnoSpeak Global Ecosystem</span>
@@ -185,7 +176,7 @@ export default function Programs() {
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-80px' }}
-                transition={{ duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
                 className={`group relative overflow-hidden rounded-3xl border-2 ${pillar.border} bg-gradient-to-br ${pillar.accent} p-8 transition-all duration-300 hover:shadow-premium-lg`}
               >
                 <div className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl ${pillar.iconBg} text-white shadow-md`}>
@@ -213,7 +204,7 @@ export default function Programs() {
         </div>
       </section>
 
-      {/* ── Program Discovery ────────────────────────────── */}
+      {/* ── Program Discovery (the 19 programs) ─────────── */}
       <section className="bg-cream py-16 md:py-20">
         <div className="container-premium">
           <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -222,157 +213,121 @@ export default function Programs() {
                 Program Discovery
               </p>
               <h2 className="mt-3 font-display text-3xl font-bold text-navy-900 md:text-4xl">
-                Explore Academy & Labs programs
+                {programs.length} programs across 2 divisions
               </h2>
               <p className="mt-3 max-w-xl font-body text-sm leading-relaxed text-navy-500">
-                {academyCount} Academy courses across {academyPathways.length} programs.
-                {' '}{labsCount} Labs courses across {labsSchools.length} schools.
+                {academyCount} Academy pathways · {labsCount} Labs tracks.
+                Every program groups related courses into a clear learning route.
               </p>
             </div>
 
-            {/* Search */}
             <div className="flex items-center gap-3 rounded-2xl border border-navy-100 bg-white px-4 py-3 shadow-sm md:w-80">
               <Search size={18} className="shrink-0 text-navy-400" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search programs and courses..."
+                placeholder="Search programs..."
                 className="w-full bg-transparent font-body text-sm text-navy-900 outline-none placeholder:text-navy-300"
               />
             </div>
           </div>
 
-          {/* Filters */}
-          <div className="mb-8 flex flex-wrap gap-3">
-            {/* Division */}
-            <div className="flex gap-2">
-              {DIVISION_FILTERS.map((d) => (
-                <button
-                  key={d.id}
-                  onClick={() => setDivision(d.id)}
-                  className={`rounded-full px-4 py-2 font-body text-sm font-semibold transition-colors ${
-                    division === d.id
-                      ? 'bg-navy-900 text-white'
-                      : 'bg-white text-navy-600 hover:bg-navy-50'
-                  }`}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Category */}
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="rounded-full border border-navy-100 bg-white px-4 py-2 font-body text-sm font-semibold text-navy-600 outline-none hover:border-gold-300"
-            >
-              <option value="all">All categories</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-
-            {/* Level */}
-            <select
-              value={level}
-              onChange={(e) => setLevel(e.target.value)}
-              className="rounded-full border border-navy-100 bg-white px-4 py-2 font-body text-sm font-semibold text-navy-600 outline-none hover:border-gold-300"
-            >
-              <option value="all">All levels</option>
-              {ALL_LEVELS.map((l) => (
-                <option key={l} value={l}>{l}</option>
-              ))}
-            </select>
-
-            {(division !== 'all' || category !== 'all' || level !== 'all' || query) && (
+          {/* Division filter */}
+          <div className="mb-8 flex flex-wrap gap-2">
+            {DIVISION_FILTERS.map((d) => (
               <button
-                onClick={() => { setDivision('all'); setCategory('all'); setLevel('all'); setQuery(''); }}
+                key={d.id}
+                onClick={() => setDivision(d.id)}
+                className={`rounded-full px-4 py-2 font-body text-sm font-semibold transition-colors ${
+                  division === d.id
+                    ? 'bg-navy-900 text-white'
+                    : 'bg-white text-navy-600 hover:bg-navy-50'
+                }`}
+              >
+                {d.label}
+              </button>
+            ))}
+            {query && (
+              <button
+                onClick={() => setQuery('')}
                 className="rounded-full px-4 py-2 font-body text-sm font-semibold text-red-500 hover:bg-red-50"
               >
-                Clear filters
+                Clear search
               </button>
             )}
           </div>
 
-          {/* Results count */}
           <p className="mb-6 font-body text-sm text-navy-500">
-            Showing {filtered.length} {filtered.length === 1 ? 'course' : 'courses'}
+            Showing {filtered.length} {filtered.length === 1 ? 'program' : 'programs'}
           </p>
 
-          {/* Course grid */}
+          {/* Program grid */}
           {filtered.length === 0 ? (
             <div className="rounded-2xl bg-white p-12 text-center">
               <p className="font-body text-sm text-navy-500">
-                No programs match your filters. Try adjusting your search.
+                No programs match your search. Try a different term.
               </p>
             </div>
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((course) => (
+              {filtered.map((program) => (
                 <Link
-                  key={course.code}
-                  to={`/courses/${course.code}`}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+                  key={program.id}
+                  to={`/programs/${program.slug}`}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg"
                 >
-                  {/* Top bar with division + level */}
+                  {/* Top bar */}
                   <div className="flex items-center justify-between border-b border-navy-50 px-5 py-3">
                     <span
                       className={`rounded-full px-2.5 py-1 font-body text-[11px] font-bold uppercase tracking-wide ${
-                        course.pillar === 'labs'
+                        program.division === 'labs'
                           ? 'bg-navy-700 text-gold-300'
                           : 'bg-gold-500/10 text-gold-700'
                       }`}
                     >
-                      {course.pillar === 'labs' ? 'Labs' : 'Academy'}
+                      {program.division === 'labs' ? 'Labs' : 'Academy'}
                     </span>
-                    <span className="font-body text-xs font-semibold text-navy-400">
-                      {course.code}
+                    <span className="font-mono text-xs font-semibold text-navy-400">
+                      {program.code}
                     </span>
                   </div>
 
                   <div className="flex flex-1 flex-col p-5">
                     <h3 className="font-display text-lg font-bold leading-snug text-navy-900 group-hover:text-gold-700">
-                      {course.name}
+                      {program.title}
                     </h3>
-                    <p className="mt-2 line-clamp-2 font-body text-sm leading-relaxed text-navy-500">
-                      {course.shortDescription}
+                    <p className="mt-2 flex-1 font-body text-sm leading-relaxed text-navy-500 line-clamp-3">
+                      {program.description}
                     </p>
 
-                    {/* Meta row */}
-                    <div className="mt-4 flex flex-wrap gap-3 font-body text-xs text-navy-500">
-                      <span className="inline-flex items-center gap-1">
-                        <Clock3 size={13} /> {course.duration}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <MonitorPlay size={13} /> {course.studyMode}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Layers3 size={13} /> {course.level}
-                      </span>
-                    </div>
-
-                    {/* Category + fees + certificate */}
-                    <div className="mt-4 flex items-center justify-between border-t border-navy-50 pt-4">
-                      <span className="font-body text-xs font-medium text-navy-400">
-                        {course.category}
-                      </span>
-                      {course.certification && (
-                        <span className="inline-flex items-center gap-1 font-body text-xs font-semibold text-gold-700">
-                          <Award size={13} /> Certificate
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {program.levels.map((lvl) => (
+                        <span
+                          key={lvl}
+                          className="rounded-full bg-navy-50 px-2.5 py-1 font-body text-[11px] font-semibold text-navy-600"
+                        >
+                          {lvl}
                         </span>
-                      )}
+                      ))}
+                      {program.studyModes.map((mode) => (
+                        <span
+                          key={mode}
+                          className="rounded-full bg-gold-500/10 px-2.5 py-1 font-body text-[11px] font-semibold text-gold-700"
+                        >
+                          {mode}
+                        </span>
+                      ))}
                     </div>
-                    {course.fees && (
-                      <p className="mt-2 font-body text-sm font-bold text-navy-900">
-                        {course.fees}
-                      </p>
-                    )}
 
-                    {/* CTA */}
-                    <div className="mt-4 inline-flex items-center gap-2 font-body text-sm font-bold text-navy-800 group-hover:text-gold-700">
-                      View course
-                      <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+                    <div className="mt-4 flex items-center justify-between border-t border-navy-50 pt-4">
+                      <span className="inline-flex items-center gap-1.5 font-body text-sm font-bold text-navy-900">
+                        <BookOpen size={15} className="text-gold-600" />
+                        {program.courseCount} {program.courseCount === 1 ? 'course' : 'courses'}
+                      </span>
+                      <span className="inline-flex items-center gap-1 font-body text-sm font-semibold text-gold-700">
+                        Explore
+                        <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+                      </span>
                     </div>
                   </div>
                 </Link>
@@ -382,7 +337,7 @@ export default function Programs() {
         </div>
       </section>
 
-      {/* ── CTA to Apply ──────────────────────────────────── */}
+      {/* ── CTA ──────────────────────────────────────────── */}
       <section className="bg-navy-900 py-16 md:py-20">
         <div className="container-premium text-center">
           <h2 className="font-display text-3xl font-bold text-white md:text-4xl">

@@ -38,7 +38,7 @@ const SelectField = forwardRef(function SelectField(
           onBlur={onBlur}
           aria-invalid={error ? 'true' : 'false'}
           aria-describedby={error ? errorId : undefined}
-          className={`w-full appearance-none rounded-2xl border bg-white px-5 py-4 pr-12 font-body text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-gold-500/20 ${
+          className={`w-full appearance-none rounded-2xl border bg-white px-5 py-4 pr-12 font-body text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-gold-500/20 disabled:cursor-not-allowed disabled:bg-navy-50 disabled:text-navy-400 ${
             error
               ? 'border-red-400 focus:border-red-400'
               : 'border-navy-100 hover:border-gold-300 focus:border-gold-500'

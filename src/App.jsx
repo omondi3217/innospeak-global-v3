@@ -5,6 +5,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
 import Home from './pages/Home.jsx';
 import About from './pages/About.jsx';
 import Academy from './pages/Academy.jsx';
+import GradeDetail from './pages/GradeDetail.jsx';                                              // ← ADDED
 import Programs from './pages/Programs.jsx';
 import ProgramDetails from './pages/ProgramDetails.jsx';
 import CourseCatalog from './pages/CourseCatalog.jsx';
@@ -112,6 +113,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/academy" element={<Academy />} />
+          <Route path="/academy/cbe/:gradeCode" element={<GradeDetail />} />          {/* ← ADDED */}
           <Route path="/programs" element={<Programs />} />
           <Route path="/programs/:slug" element={<ProgramDetails />} />
           <Route path="/courses" element={<CourseCatalog />} />

@@ -12,38 +12,26 @@ import {
   UserCheck,
   FlaskConical,
   HeartHandshake,
-  Compass,
   LayoutGrid,
 } from 'lucide-react';
 import useScrolled from '../../hooks/useScrolled.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import logo from '../../assets/logo/logo.png';
 
+/**
+ * Routes whose hero opens with a dark image or gradient.
+ * Only these get the transparent navbar at the top of the page.
+ * Every other page gets the navy-glass navbar from first paint.
+ */
+const DARK_HERO_PATHS = new Set([
+  '/programs',
+]);
+
 const exploreLinks = [
-  {
-    label: 'Academy',
-    to: '/academy',
-    icon: GraduationCap,
-    description: 'Structured courses & certification',
-  },
-  {
-    label: 'Labs',
-    to: '/labs',
-    icon: FlaskConical,
-    description: 'Practical engineering & innovation',
-  },
-  {
-    label: 'Foundation',
-    to: '/foundation',
-    icon: HeartHandshake,
-    description: 'Scholarships & educational support',
-  },
-  {
-    label: 'All Programs',
-    to: '/programs',
-    icon: LayoutGrid,
-    description: 'Browse the full catalogue',
-  },
+  { label: 'Academy', to: '/academy', icon: GraduationCap, description: 'Structured courses & certification' },
+  { label: 'Labs', to: '/labs', icon: FlaskConical, description: 'Practical engineering & innovation' },
+  { label: 'Foundation', to: '/foundation', icon: HeartHandshake, description: 'Scholarships & educational support' },
+  { label: 'All Programs', to: '/programs', icon: LayoutGrid, description: 'Browse the full catalogue' },
 ];
 
 const aboutLinks = [
@@ -72,6 +60,9 @@ export default function Navbar() {
   const isAdmin = profile?.role === 'admin';
   const isInstructor = ['admin', 'lms_admin', 'instructor'].includes(profile?.role);
 
+  const hasDarkHero = DARK_HERO_PATHS.has(pathname);
+  const isSolid = scrolled || !hasDarkHero;
+
   useEffect(() => {
     function onClickOutside(e) {
       if (accountRef.current && !accountRef.current.contains(e.target)) setAccountOpen(false);
@@ -85,29 +76,27 @@ export default function Navbar() {
   const aboutActive = aboutLinks.some((l) => pathname === l.to);
   const exploreActive = exploreLinks.some((l) => pathname === l.to);
 
+  // ── Style tokens ────────────────────────────────────────────
+  // Text is white in both states. Background switches from fully
+  // transparent (over dark heroes) to navy glass (everywhere else).
   const linkBase = 'font-body text-sm font-medium transition-colors duration-200';
-  const linkIdle = scrolled ? 'text-navy-700 hover:text-gold-600' : 'text-white hover:text-gold-400';
-  const linkActive = scrolled ? 'text-gold-600' : 'text-gold-400';
-  const wordmarkColor = scrolled ? 'text-navy-900' : 'text-white';
-  const menuIconColor = scrolled ? 'text-navy-900 hover:bg-navy-50' : 'text-white hover:bg-white/10';
+  const linkIdle = 'text-white/85 hover:text-gold-400';
+  const linkActive = 'text-gold-400';
+  const wordmarkColor = 'text-white';
+  const menuIconColor = 'text-white hover:bg-white/10';
 
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'border-b border-navy-100 bg-white/90 shadow-premium backdrop-blur-md'
+        isSolid
+          ? 'border-b border-gold-500/25 bg-navy-900/90 shadow-premium-lg backdrop-blur-xl'
           : 'border-b border-transparent bg-transparent'
       }`}
     >
       <nav className="container-premium flex h-20 items-center justify-between">
         {/* Logo */}
         <Link to="/" className="group flex items-center" onClick={() => setMobileOpen(false)}>
-          <img
-            src={logo}
-            alt="InnoSpeak Global"
-            className="mr-2 h-10 w-10 select-none"
-            draggable={false}
-          />
+          <img src={logo} alt="InnoSpeak Global" className="mr-2 h-10 w-10 select-none" draggable={false} />
           <span className={`font-display text-xl font-bold tracking-tight transition-colors duration-300 sm:text-2xl ${wordmarkColor}`}>
             InnoSpeak
           </span>
@@ -119,17 +108,12 @@ export default function Navbar() {
 
         {/* Desktop links */}
         <ul className="hidden items-center gap-6 lg:flex">
-          {/* Home */}
           <li>
-            <Link
-              to="/"
-              className={`${linkBase} ${linkIdle} ${pathname === '/' ? linkActive : ''}`}
-            >
+            <Link to="/" className={`${linkBase} ${linkIdle} ${pathname === '/' ? linkActive : ''}`}>
               Home
             </Link>
           </li>
 
-          {/* About dropdown */}
           <li className="relative" ref={aboutRef}>
             <button
               type="button"
@@ -146,15 +130,15 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute left-0 mt-3 w-48 overflow-hidden rounded-xl border border-navy-100 bg-white py-2 shadow-premium-lg"
+                  className="absolute left-0 mt-3 w-48 overflow-hidden rounded-xl border border-navy-700 bg-navy-900 py-2 shadow-premium-lg backdrop-blur-xl"
                 >
                   {aboutLinks.map((link) => (
                     <Link
                       key={link.to}
                       to={link.to}
                       onClick={() => setAboutOpen(false)}
-                      className={`block px-4 py-2.5 font-body text-sm font-medium text-navy-700 hover:bg-navy-50 ${
-                        pathname === link.to ? 'text-gold-600' : ''
+                      className={`block px-4 py-2.5 font-body text-sm font-medium text-white/85 transition-colors hover:bg-white/5 hover:text-gold-400 ${
+                        pathname === link.to ? 'bg-white/5 text-gold-400' : ''
                       }`}
                     >
                       {link.label}
@@ -165,7 +149,6 @@ export default function Navbar() {
             </AnimatePresence>
           </li>
 
-          {/* Explore mega-dropdown */}
           <li className="relative" ref={exploreRef}>
             <button
               type="button"
@@ -182,7 +165,7 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute left-1/2 mt-3 w-80 -translate-x-1/2 overflow-hidden rounded-2xl border border-navy-100 bg-white py-3 shadow-premium-lg"
+                  className="absolute left-1/2 mt-3 w-80 -translate-x-1/2 overflow-hidden rounded-2xl border border-navy-700 bg-navy-900 py-3 shadow-premium-lg backdrop-blur-xl"
                 >
                   {exploreLinks.map((link) => {
                     const Icon = link.icon;
@@ -191,18 +174,18 @@ export default function Navbar() {
                         key={link.to}
                         to={link.to}
                         onClick={() => setExploreOpen(false)}
-                        className={`flex items-start gap-3 px-4 py-3 transition-colors hover:bg-navy-50 ${
-                          pathname === link.to ? 'bg-gold-500/5' : ''
+                        className={`flex items-start gap-3 px-4 py-3 transition-colors hover:bg-white/5 ${
+                          pathname === link.to ? 'bg-white/5' : ''
                         }`}
                       >
-                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold-500/10 text-gold-700">
+                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold-500/15 text-gold-400">
                           <Icon size={18} strokeWidth={1.8} />
                         </div>
                         <div>
-                          <p className={`font-body text-sm font-bold ${pathname === link.to ? 'text-gold-700' : 'text-navy-900'}`}>
+                          <p className={`font-body text-sm font-bold ${pathname === link.to ? 'text-gold-400' : 'text-white'}`}>
                             {link.label}
                           </p>
-                          <p className="font-body text-xs text-navy-500">{link.description}</p>
+                          <p className="font-body text-xs text-white/60">{link.description}</p>
                         </div>
                       </Link>
                     );
@@ -212,15 +195,11 @@ export default function Navbar() {
             </AnimatePresence>
           </li>
 
-          {/* Career Hub + Contact */}
           {topNavLinks.slice(1).map((link) => {
             const active = pathname === link.to;
             return (
               <li key={link.to}>
-                <Link
-                  to={link.to}
-                  className={`${linkBase} ${linkIdle} ${active ? linkActive : ''}`}
-                >
+                <Link to={link.to} className={`${linkBase} ${linkIdle} ${active ? linkActive : ''}`}>
                   {link.label}
                 </Link>
               </li>
@@ -249,59 +228,29 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-3 w-56 overflow-hidden rounded-xl border border-navy-100 bg-white py-2 shadow-premium-lg"
+                    className="absolute right-0 mt-3 w-56 overflow-hidden rounded-xl border border-navy-700 bg-navy-900 py-2 shadow-premium-lg backdrop-blur-xl"
                   >
-                    <Link
-                      to="/portal"
-                      onClick={() => setAccountOpen(false)}
-                      className={`flex items-center gap-2.5 px-4 py-2.5 font-body text-sm font-medium text-navy-700 hover:bg-navy-50 ${
-                        pathname === '/portal' ? 'text-gold-600' : ''
-                      }`}
-                    >
+                    <Link to="/portal" onClick={() => setAccountOpen(false)} className={`flex items-center gap-2.5 px-4 py-2.5 font-body text-sm font-medium text-white/85 transition-colors hover:bg-white/5 hover:text-gold-400 ${pathname === '/portal' ? 'bg-white/5 text-gold-400' : ''}`}>
                       <UserCircle2 size={16} />
                       Student Portal
                     </Link>
-                    <Link
-                      to="/learn"
-                      onClick={() => setAccountOpen(false)}
-                      className={`flex items-center gap-2.5 px-4 py-2.5 font-body text-sm font-medium text-navy-700 hover:bg-navy-50 ${
-                        pathname.startsWith('/learn') ? 'text-gold-600' : ''
-                      }`}
-                    >
+                    <Link to="/learn" onClick={() => setAccountOpen(false)} className={`flex items-center gap-2.5 px-4 py-2.5 font-body text-sm font-medium text-white/85 transition-colors hover:bg-white/5 hover:text-gold-400 ${pathname.startsWith('/learn') ? 'bg-white/5 text-gold-400' : ''}`}>
                       <BookOpen size={16} />
                       E-Learning
                     </Link>
                     {isInstructor && (
-                      <Link
-                        to="/teach"
-                        onClick={() => setAccountOpen(false)}
-                        className={`flex items-center gap-2.5 px-4 py-2.5 font-body text-sm font-medium text-navy-700 hover:bg-navy-50 ${
-                          pathname.startsWith('/teach') ? 'text-gold-600' : ''
-                        }`}
-                      >
+                      <Link to="/teach" onClick={() => setAccountOpen(false)} className={`flex items-center gap-2.5 px-4 py-2.5 font-body text-sm font-medium text-white/85 transition-colors hover:bg-white/5 hover:text-gold-400 ${pathname.startsWith('/teach') ? 'bg-white/5 text-gold-400' : ''}`}>
                         <GraduationCap size={16} />
                         Teach
                       </Link>
                     )}
                     {isAdmin && (
-                      <Link
-                        to="/admin"
-                        onClick={() => setAccountOpen(false)}
-                        className={`flex items-center gap-2.5 border-t border-navy-50 px-4 py-2.5 font-body text-sm font-medium text-navy-700 hover:bg-navy-50 ${
-                          pathname.startsWith('/admin') ? 'text-gold-600' : ''
-                        }`}
-                      >
+                      <Link to="/admin" onClick={() => setAccountOpen(false)} className={`flex items-center gap-2.5 border-t border-white/10 px-4 py-2.5 font-body text-sm font-medium text-white/85 transition-colors hover:bg-white/5 hover:text-gold-400 ${pathname.startsWith('/admin') ? 'bg-white/5 text-gold-400' : ''}`}>
                         <ShieldCheck size={16} />
                         Staff Panel
                       </Link>
                     )}
-                    <Link
-                      to="/become-tutor"
-                      onClick={() => setAccountOpen(false)}
-                      className={`flex items-center gap-2.5 border-t border-navy-50 px-4 py-2.5 font-body text-sm font-medium text-navy-700 hover:bg-navy-50 ${
-                        pathname === '/become-tutor' ? 'text-gold-600' : ''
-                      }`}
-                    >
+                    <Link to="/become-tutor" onClick={() => setAccountOpen(false)} className={`flex items-center gap-2.5 border-t border-white/10 px-4 py-2.5 font-body text-sm font-medium text-white/85 transition-colors hover:bg-white/5 hover:text-gold-400 ${pathname === '/become-tutor' ? 'bg-white/5 text-gold-400' : ''}`}>
                       <UserCheck size={16} />
                       Become a Tutor
                     </Link>
@@ -310,10 +259,7 @@ export default function Navbar() {
               </AnimatePresence>
             </div>
           ) : (
-            <Link
-              to="/login"
-              className={`flex items-center gap-1.5 ${linkBase} ${linkIdle} ${pathname === '/login' ? linkActive : ''}`}
-            >
+            <Link to="/login" className={`flex items-center gap-1.5 ${linkBase} ${linkIdle} ${pathname === '/login' ? linkActive : ''}`}>
               <UserCircle2 size={17} />
               Student Login
             </Link>
@@ -343,69 +289,41 @@ export default function Navbar() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-t border-navy-100 bg-white shadow-premium-lg lg:hidden"
+            className="overflow-hidden border-t border-white/10 bg-navy-900/95 backdrop-blur-xl lg:hidden"
           >
             <ul className="container-premium flex flex-col gap-1 py-4">
-              {/* Home */}
               <li>
-                <Link
-                  to="/"
-                  onClick={() => setMobileOpen(false)}
-                  className={`block rounded-lg px-4 py-3 font-body text-sm font-medium transition-colors ${
-                    pathname === '/' ? 'bg-gold-500/10 text-gold-700' : 'text-navy-700 hover:bg-navy-50'
-                  }`}
-                >
+                <Link to="/" onClick={() => setMobileOpen(false)} className={`block rounded-lg px-4 py-3 font-body text-sm font-medium transition-colors ${pathname === '/' ? 'bg-gold-500/15 text-gold-400' : 'text-white/85 hover:bg-white/5'}`}>
                   Home
                 </Link>
               </li>
 
-              {/* About group */}
-              <li className="px-4 pt-3 pb-1 font-body text-xs font-bold uppercase tracking-wider text-navy-400">
+              <li className="px-4 pt-3 pb-1 font-body text-xs font-bold uppercase tracking-wider text-white/40">
                 About
               </li>
               {aboutLinks.map((link) => (
                 <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    onClick={() => setMobileOpen(false)}
-                    className={`block rounded-lg px-4 py-3 font-body text-sm font-medium transition-colors ${
-                      pathname === link.to ? 'bg-gold-500/10 text-gold-700' : 'text-navy-700 hover:bg-navy-50'
-                    }`}
-                  >
+                  <Link to={link.to} onClick={() => setMobileOpen(false)} className={`block rounded-lg px-4 py-3 font-body text-sm font-medium transition-colors ${pathname === link.to ? 'bg-gold-500/15 text-gold-400' : 'text-white/85 hover:bg-white/5'}`}>
                     {link.label}
                   </Link>
                 </li>
               ))}
 
-              {/* Explore group */}
-              <li className="px-4 pt-3 pb-1 font-body text-xs font-bold uppercase tracking-wider text-navy-400">
+              <li className="px-4 pt-3 pb-1 font-body text-xs font-bold uppercase tracking-wider text-white/40">
                 Explore
               </li>
               {exploreLinks.map((link) => (
                 <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-4 py-3 font-body text-sm font-medium transition-colors ${
-                      pathname === link.to ? 'bg-gold-500/10 text-gold-700' : 'text-navy-700 hover:bg-navy-50'
-                    }`}
-                  >
-                    <link.icon size={16} className="text-gold-600" />
+                  <Link to={link.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-3 rounded-lg px-4 py-3 font-body text-sm font-medium transition-colors ${pathname === link.to ? 'bg-gold-500/15 text-gold-400' : 'text-white/85 hover:bg-white/5'}`}>
+                    <link.icon size={16} className="text-gold-400" />
                     {link.label}
                   </Link>
                 </li>
               ))}
 
-              {/* Top-level */}
               {topNavLinks.slice(1).map((link) => (
                 <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    onClick={() => setMobileOpen(false)}
-                    className={`block rounded-lg px-4 py-3 font-body text-sm font-medium transition-colors ${
-                      pathname === link.to ? 'bg-gold-500/10 text-gold-700' : 'text-navy-700 hover:bg-navy-50'
-                    }`}
-                  >
+                  <Link to={link.to} onClick={() => setMobileOpen(false)} className={`block rounded-lg px-4 py-3 font-body text-sm font-medium transition-colors ${pathname === link.to ? 'bg-gold-500/15 text-gold-400' : 'text-white/85 hover:bg-white/5'}`}>
                     {link.label}
                   </Link>
                 </li>
@@ -414,34 +332,16 @@ export default function Navbar() {
               <li className="mt-2 flex flex-col gap-2">
                 {user ? (
                   <>
-                    <Link to="/portal" onClick={() => setMobileOpen(false)} className="btn-outline w-full">
-                      Student Portal
-                    </Link>
-                    <Link to="/learn" onClick={() => setMobileOpen(false)} className="btn-outline w-full">
-                      E-Learning
-                    </Link>
-                    {isInstructor && (
-                      <Link to="/teach" onClick={() => setMobileOpen(false)} className="btn-outline w-full">
-                        Teach
-                      </Link>
-                    )}
-                    {isAdmin && (
-                      <Link to="/admin" onClick={() => setMobileOpen(false)} className="btn-outline w-full">
-                        Staff Panel
-                      </Link>
-                    )}
-                    <Link to="/become-tutor" onClick={() => setMobileOpen(false)} className="btn-outline w-full">
-                      Become a Tutor
-                    </Link>
+                    <Link to="/portal" onClick={() => setMobileOpen(false)} className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-center font-body text-sm font-bold text-white transition-colors hover:bg-white/10">Student Portal</Link>
+                    <Link to="/learn" onClick={() => setMobileOpen(false)} className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-center font-body text-sm font-bold text-white transition-colors hover:bg-white/10">E-Learning</Link>
+                    {isInstructor && <Link to="/teach" onClick={() => setMobileOpen(false)} className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-center font-body text-sm font-bold text-white transition-colors hover:bg-white/10">Teach</Link>}
+                    {isAdmin && <Link to="/admin" onClick={() => setMobileOpen(false)} className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-center font-body text-sm font-bold text-white transition-colors hover:bg-white/10">Staff Panel</Link>}
+                    <Link to="/become-tutor" onClick={() => setMobileOpen(false)} className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-center font-body text-sm font-bold text-white transition-colors hover:bg-white/10">Become a Tutor</Link>
                   </>
                 ) : (
-                  <Link to="/login" onClick={() => setMobileOpen(false)} className="btn-outline w-full">
-                    Student Login
-                  </Link>
+                  <Link to="/login" onClick={() => setMobileOpen(false)} className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-center font-body text-sm font-bold text-white transition-colors hover:bg-white/10">Student Login</Link>
                 )}
-                <Link to="/apply" onClick={() => setMobileOpen(false)} className="btn-gold w-full">
-                  Apply Now
-                </Link>
+                <Link to="/apply" onClick={() => setMobileOpen(false)} className="btn-gold w-full">Apply Now</Link>
               </li>
             </ul>
           </motion.div>

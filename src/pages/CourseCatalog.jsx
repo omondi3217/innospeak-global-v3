@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRight, BookOpen, CheckCircle2, Clock3, Search, SlidersHorizontal, Sparkles } from 'lucide-react';
 import Seo from '../components/ui/Seo.jsx';
 import { COURSES, PATHWAYS } from '../lib/data/programmeData.js';
@@ -9,10 +9,35 @@ const levels = ['All levels', 'Beginner', 'Intermediate', 'Advanced'];
 const modes = ['All modes', 'Online', 'Hybrid', 'Physical / Hybrid', 'Physical'];
 
 export default function CourseCatalog() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState('');
-  const [pathway, setPathway] = useState('all');
+  const [pathway, setPathway] = useState(() => searchParams.get('pathway') || 'all');
   const [level, setLevel] = useState('All levels');
   const [mode, setMode] = useState('All modes');
+
+  // Keep pathway state in sync with the URL — handles the case where the
+  // user navigates from /courses (no filter) to /courses?pathway=X via an
+  // in-app link, without remounting this component.
+  useEffect(() => {
+    setPathway(searchParams.get('pathway') || 'all');
+  }, [searchParams]);
+
+  // Push the user's selection back into the URL so the filter is
+  // shareable, bookmarkable, and works with the back button.
+  const handlePathwayChange = (value) => {
+    setPathway(value);
+    const next = new URLSearchParams(searchParams);
+    if (value === 'all') next.delete('pathway');
+    else next.set('pathway', value);
+    setSearchParams(next, { replace: true });
+  };
+
+  const handleClearFilters = () => {
+    setQuery('');
+    setLevel('All levels');
+    setMode('All modes');
+    handlePathwayChange('all');
+  };
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -47,7 +72,7 @@ export default function CourseCatalog() {
       <section className="container-premium py-12 sm:py-16">
         <div className="grid gap-4 rounded-3xl border border-navy-100 bg-white p-5 shadow-sm lg:grid-cols-[1fr_auto_auto_auto] lg:items-center">
           <div className="flex items-center gap-2 font-body text-sm font-semibold text-navy-700"><SlidersHorizontal size={16} className="text-gold-600" /> Filters</div>
-          <select value={pathway} onChange={(e) => setPathway(e.target.value)} className="rounded-xl border border-navy-100 px-3 py-2.5 font-body text-sm text-navy-700" aria-label="Filter by learning area">
+          <select value={pathway} onChange={(e) => handlePathwayChange(e.target.value)} className="rounded-xl border border-navy-100 px-3 py-2.5 font-body text-sm text-navy-700" aria-label="Filter by learning area">
             <option value="all">All learning areas</option>
             {PATHWAYS.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
           </select>
@@ -65,7 +90,7 @@ export default function CourseCatalog() {
         </div>
 
         {visible.length === 0 ? (
-          <div className="mt-8 rounded-3xl border border-dashed border-navy-200 bg-navy-50 p-12 text-center"><Sparkles className="mx-auto text-gold-600" /><h3 className="mt-4 font-display text-xl font-bold text-navy-900">No courses match those filters</h3><button onClick={() => { setQuery(''); setPathway('all'); setLevel('All levels'); setMode('All modes'); }} className="btn-outline mt-5 text-sm">Clear filters</button></div>
+          <div className="mt-8 rounded-3xl border border-dashed border-navy-200 bg-navy-50 p-12 text-center"><Sparkles className="mx-auto text-gold-600" /><h3 className="mt-4 font-display text-xl font-bold text-navy-900">No courses match those filters</h3><button onClick={handleClearFilters} className="btn-outline mt-5 text-sm">Clear filters</button></div>
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {visible.map((course) => (

@@ -16,7 +16,7 @@ export const ACADEMY_HERO_DESCRIPTION =
 /** Reflects the real catalogue — see src/lib/data/programmeData.js */
 export const ACADEMY_HERO_STATS = [
   { value: 12, suffix: '+', label: 'Learning Pathways' },
-  { value: 158, suffix: '+', label: 'Courses' },
+  { value: 180, suffix: '+', label: 'Courses' },
   { value: 13, suffix: '+', label: 'Languages' },
   { value: 100, suffix: '%', label: 'Career Focus' },
 ];
@@ -24,7 +24,7 @@ export const ACADEMY_HERO_STATS = [
 export const ACADEMY_HERO_IMAGE = student1;
 
 export const ACADEMY_HERO_IMAGE_STATS = [
-  { value: '158+', label: 'Courses' },
+  { value: '180+', label: 'Courses' },
   { value: '12+', label: 'Pathways' },
   { value: '13+', label: 'Languages' },
 ];

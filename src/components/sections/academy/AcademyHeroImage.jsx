@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GraduationCap, Globe, Cpu, Award } from 'lucide-react';
-import { ACADEMY_HERO_SLIDES, ACADEMY_HERO_IMAGE_STATS, ACADEMY_FEATURE_CARDS } from './academyHeroData.js';
+import {
+  ACADEMY_HERO_SLIDES,
+  ACADEMY_HERO_IMAGE_STATS,
+  ACADEMY_FEATURE_CARDS,
+} from './academyHeroData.js';
 
 const ICONS = {
   graduation: GraduationCap,
@@ -10,6 +14,11 @@ const ICONS = {
   award: Award,
 };
 
+/**
+ * AcademyHeroImage — sliding hero image with floating feature badges
+ * and a stats strip. Aspect ratio tuned so the image never dominates
+ * the vertical space on desktop.
+ */
 export default function AcademyHeroImage() {
   const [current, setCurrent] = useState(0);
 
@@ -22,13 +31,15 @@ export default function AcademyHeroImage() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="relative mx-auto w-full max-w-lg lg:max-w-none"
+      className="relative mx-auto w-full max-w-md sm:max-w-lg lg:max-w-none"
     >
+      {/* Framed image */}
       <div className="relative overflow-hidden rounded-3xl border border-navy-100 shadow-premium-lg">
-        <div className="relative aspect-[4/5] w-full sm:aspect-[4/3] lg:aspect-[5/6]">
+        {/* Aspect ratio scales: taller on mobile for a hero feel, wider on desktop */}
+        <div className="relative aspect-[4/5] w-full sm:aspect-[4/3] lg:aspect-[5/5]">
           <AnimatePresence mode="sync">
             <motion.img
               key={current}
@@ -42,7 +53,9 @@ export default function AcademyHeroImage() {
             />
           </AnimatePresence>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-navy-900/40 via-transparent to-transparent" />
+
+        {/* Bottom fade */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-900/45 via-transparent to-transparent" />
 
         {/* Slide indicators */}
         <div className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 gap-1.5">
@@ -56,6 +69,7 @@ export default function AcademyHeroImage() {
           ))}
         </div>
 
+        {/* Stats strip */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -64,7 +78,7 @@ export default function AcademyHeroImage() {
         >
           {ACADEMY_HERO_IMAGE_STATS.map((stat) => (
             <div key={stat.label} className="text-center">
-              <div className="font-display text-lg font-bold text-white sm:text-xl">
+              <div className="font-display text-base font-bold text-white sm:text-lg lg:text-xl">
                 {stat.value}
               </div>
               <div className="font-body text-[10px] text-white/80 sm:text-xs">
@@ -75,6 +89,7 @@ export default function AcademyHeroImage() {
         </motion.div>
       </div>
 
+      {/* Floating feature cards — desktop + tablet only */}
       {ACADEMY_FEATURE_CARDS.map((card, i) => {
         const Icon = ICONS[card.icon] ?? GraduationCap;
         return (
@@ -84,7 +99,7 @@ export default function AcademyHeroImage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.9 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
             whileHover={{ y: -4 }}
-            className={`absolute ${card.pos} hidden items-center gap-2.5 rounded-xl border border-white/20 bg-white/90 px-3.5 py-2.5 shadow-glass backdrop-blur-md sm:flex`}
+            className={`absolute ${card.pos} hidden items-center gap-2.5 rounded-xl border border-white/40 bg-white/95 px-3.5 py-2.5 shadow-glass backdrop-blur-md md:flex`}
           >
             <div
               className={`flex h-8 w-8 items-center justify-center rounded-lg ${
@@ -102,10 +117,11 @@ export default function AcademyHeroImage() {
         );
       })}
 
+      {/* Decorative rotating ring */}
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-        className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full border-2 border-dashed border-gold-400/40"
+        className="pointer-events-none absolute -right-5 -top-5 h-14 w-14 rounded-full border-2 border-dashed border-gold-400/40 sm:h-16 sm:w-16"
       />
     </motion.div>
   );

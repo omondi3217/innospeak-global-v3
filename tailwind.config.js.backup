@@ -32,10 +32,8 @@ export default {
         cream: '#F8FAFC',
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
-        body: ["Inter", "sans-serif"],
-        serif: ["Playfair Display", "serif"],
-        display: ["Playfair Display", "serif"],
+        display: ['"Playfair Display"', 'serif'],
+        body: ['Inter', 'sans-serif'],
       },
       boxShadow: {
         premium: '0 4px 24px -6px rgba(0, 31, 63, 0.08)',

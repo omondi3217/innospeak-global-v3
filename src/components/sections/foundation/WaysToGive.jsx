@@ -59,7 +59,9 @@ export default function WaysToGive() {
             {/* PayPal */}
             <motion.div
               variants={fadeUpItem}
-              className="flex h-full flex-col rounded-2xl border border-navy-100 bg-white p-8 shadow-premium"
+              whileHover={{ y: -6 }}
+              transition={{ duration: 0.3 }}
+              className="flex h-full flex-col rounded-2xl border border-navy-100 bg-white p-8 shadow-premium transition-shadow duration-300 hover:shadow-premium-lg"
             >
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-navy-900 text-gold-400">
                 <Wallet size={26} strokeWidth={1.8} aria-hidden="true" />
@@ -75,7 +77,9 @@ export default function WaysToGive() {
             {/* M-Pesa */}
             <motion.div
               variants={fadeUpItem}
-              className="flex h-full flex-col rounded-2xl border border-navy-100 bg-white p-8 shadow-premium"
+              whileHover={{ y: -6 }}
+              transition={{ duration: 0.3 }}
+              className="flex h-full flex-col rounded-2xl border border-navy-100 bg-white p-8 shadow-premium transition-shadow duration-300 hover:shadow-premium-lg"
             >
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-navy-900 text-gold-400">
                 <Smartphone size={26} strokeWidth={1.8} aria-hidden="true" />

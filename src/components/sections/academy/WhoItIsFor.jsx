@@ -49,11 +49,11 @@ export default function WhoItIsFor() {
             <motion.div
               key={title}
               variants={fadeUpItem}
-              whileHover={{ y: -4 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-2xl border border-navy-100 bg-cream p-6 transition-shadow duration-300 hover:shadow-premium"
+              whileHover={{ y: -6 }}
+              transition={{ duration: 0.3 }}
+              className="group rounded-2xl border border-navy-100 bg-white p-6 shadow-premium transition-shadow duration-300 hover:shadow-premium-lg"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-500/10 text-gold-600">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-navy-900 text-gold-400 transition-colors duration-300 group-hover:bg-gold-gradient group-hover:text-navy-900">
                 <Icon size={24} strokeWidth={1.8} />
               </div>
               <h3 className="mt-4 font-display text-lg font-bold text-navy-900">{title}</h3>

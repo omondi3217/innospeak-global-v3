@@ -15,7 +15,7 @@ import {
  */
 export default function AcademyHero() {
   return (
-    <section className="relative overflow-hidden bg-white py-14 sm:py-20 lg:py-24">
+    <section className="relative overflow-hidden bg-white py-20 sm:py-24">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-navy-50/40 via-white to-gold-50/30" />
 
       <div className="container-premium relative z-10">

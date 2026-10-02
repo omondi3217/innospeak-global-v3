@@ -62,7 +62,7 @@ function FeatureCard({ icon: Icon, title, description }) {
     >
       <div
         className="
-          flex h-14 w-14 items-center justify-center rounded-xl
+          flex h-14 w-14 items-center justify-center rounded-2xl
           bg-navy-900 text-gold-400 transition-colors duration-300
           group-hover:bg-gold-gradient group-hover:text-navy-900
         "

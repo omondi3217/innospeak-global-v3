@@ -40,8 +40,10 @@ export default function CourseDetails() {
 
       {/* Enrollment / checkout entry point. Free courses enroll directly;
           paid courses open the M-PESA / PayPal CheckoutModal. */}
-      <section className="bg-cream px-5 pt-10 sm:px-8">
-        <EnrollButton course={course} />
+      <section className="bg-cream py-10">
+        <div className="container-premium">
+          <EnrollButton course={course} />
+        </div>
       </section>
 
       <CourseOverview course={course} />

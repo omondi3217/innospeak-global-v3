@@ -10,6 +10,8 @@ import {
   BookOpen,
 } from 'lucide-react';
 import Seo from '../components/ui/Seo.jsx';
+import SectionHeading from '../components/ui/SectionHeading.jsx';
+import { staggerContainer, fadeUpItem, inViewOnce } from '../lib/motion/presets';
 import { COURSES, getCoursesByPathway } from '../lib/data/programmeData.js';
 import { PATHWAYS, TRACKS } from '../lib/data/registry.js';
 
@@ -49,9 +51,9 @@ const PILLARS = [
     icon: HeartHandshake,
     to: '/foundation',
     cta: 'Explore Foundation',
-    accent: 'from-emerald-500/10 to-emerald-400/5',
-    border: 'border-emerald-400/30',
-    iconBg: 'bg-gradient-to-br from-emerald-600 to-emerald-700',
+    accent: 'from-gold-500/10 to-gold-400/5',
+    border: 'border-gold-500/30',
+    iconBg: 'bg-gold-gradient',
   },
 ];
 
@@ -157,55 +159,52 @@ export default function Programs() {
       </section>
 
       {/* ── Three Pillars ────────────────────────────────── */}
-      <section className="container-premium py-16 md:py-20">
-        <div className="mx-auto mb-12 max-w-2xl text-center">
-          <p className="font-body text-xs font-bold uppercase tracking-[0.22em] text-gold-700">
-            One Ecosystem. Three Pathways.
-          </p>
-          <h2 className="mt-3 font-display text-3xl font-bold text-navy-900 md:text-4xl">
-            Choose your path within InnoSpeak Global
-          </h2>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          {PILLARS.map((pillar, i) => {
-            const Icon = pillar.icon;
-            return (
-              <motion.div
-                key={pillar.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-80px' }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className={`group relative overflow-hidden rounded-3xl border-2 ${pillar.border} bg-gradient-to-br ${pillar.accent} p-8 transition-all duration-300 hover:shadow-premium-lg`}
-              >
-                <div className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl ${pillar.iconBg} text-white shadow-md`}>
-                  <Icon size={28} strokeWidth={1.8} />
-                </div>
-                <h3 className="font-display text-xl font-bold text-navy-900">
-                  {pillar.title}
-                </h3>
-                <p className="mt-1 font-body text-xs font-semibold uppercase tracking-wider text-gold-700">
-                  {pillar.tagline}
-                </p>
-                <p className="mt-4 font-body text-sm leading-relaxed text-navy-600">
-                  {pillar.description}
-                </p>
-                <Link
-                  to={pillar.to}
-                  className="mt-6 inline-flex items-center gap-2 font-body text-sm font-bold text-navy-800 transition-colors hover:text-gold-700"
+      <section className="bg-white py-20 sm:py-24">
+        <div className="container-premium">
+          <SectionHeading
+            eyebrow="One Ecosystem. Three Pathways."
+            title="Choose your path within InnoSpeak Global"
+          />
+          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+            {PILLARS.map((pillar, i) => {
+              const Icon = pillar.icon;
+              return (
+                <motion.div
+                  key={pillar.id}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={inViewOnce}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className={`group relative overflow-hidden rounded-2xl border ${pillar.border} bg-gradient-to-br ${pillar.accent} p-8 transition-all duration-300 hover:shadow-premium-lg`}
                 >
-                  {pillar.cta}
-                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-                </Link>
-              </motion.div>
-            );
-          })}
+                  <div className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl ${pillar.iconBg} text-navy-900 shadow-md`}>
+                    <Icon size={28} strokeWidth={1.8} />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-navy-900">
+                    {pillar.title}
+                  </h3>
+                  <p className="mt-1 font-body text-xs font-semibold uppercase tracking-[0.22em] text-gold-700">
+                    {pillar.tagline}
+                  </p>
+                  <p className="mt-4 font-body text-sm leading-relaxed text-navy-600">
+                    {pillar.description}
+                  </p>
+                  <Link
+                    to={pillar.to}
+                    className="mt-6 inline-flex items-center gap-2 font-body text-sm font-bold text-navy-900 transition-colors hover:text-gold-700"
+                  >
+                    {pillar.cta}
+                    <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
       {/* ── Program Discovery (the 19 programs) ─────────── */}
-      <section className="bg-cream py-16 md:py-20">
+      <section className="bg-cream py-20 sm:py-24">
         <div className="container-premium">
           <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
@@ -250,7 +249,7 @@ export default function Programs() {
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="rounded-full px-4 py-2 font-body text-sm font-semibold text-red-500 hover:bg-red-50"
+                className="rounded-full px-4 py-2 font-body text-sm font-semibold text-navy-500 hover:bg-navy-50"
               >
                 Clear search
               </button>
@@ -269,12 +268,18 @@ export default function Programs() {
               </p>
             </div>
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <motion.div
+              variants={staggerContainer(0.06, 0.1)}
+              initial="hidden"
+              whileInView="visible"
+              viewport={inViewOnce}
+              className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+            >
               {filtered.map((program) => (
+                <motion.div key={program.id} variants={fadeUpItem}>
                 <Link
-                  key={program.id}
                   to={`/programs/${program.slug}`}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg"
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg"
                 >
                   {/* Top bar */}
                   <div className="flex items-center justify-between border-b border-navy-50 px-5 py-3">
@@ -331,29 +336,37 @@ export default function Programs() {
                     </div>
                   </div>
                 </Link>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
       </section>
 
       {/* ── CTA ──────────────────────────────────────────── */}
-      <section className="bg-navy-900 py-16 md:py-20">
+      <section className="bg-navy-900 py-20 sm:py-24">
         <div className="container-premium text-center">
-          <h2 className="font-display text-3xl font-bold text-white md:text-4xl">
-            Ready to start your journey?
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl font-body text-sm leading-relaxed text-navy-200">
-            Apply to InnoSpeak Global Academy or Labs and take the first step
-            toward your future.
-          </p>
-          <Link
-            to="/apply"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-gold-gradient px-8 py-3.5 font-body text-sm font-bold text-navy-900 shadow-md transition-transform hover:scale-[1.03]"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={inViewOnce}
+            transition={{ duration: 0.5 }}
           >
-            Apply Now
-            <ArrowRight size={16} />
-          </Link>
+            <h2 className="font-display text-3xl font-bold text-white md:text-4xl">
+              Ready to start your journey?
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl font-body text-base leading-relaxed text-navy-200">
+              Apply to InnoSpeak Global Academy or Labs and take the first step
+              toward your future.
+            </p>
+            <Link
+              to="/apply"
+              className="btn-gold mt-8 inline-flex items-center gap-2"
+            >
+              Apply Now
+              <ArrowRight size={16} />
+            </Link>
+          </motion.div>
         </div>
       </section>
     </>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
 import SectionHeading from '../ui/SectionHeading.jsx';
+import { staggerContainer, fadeUpItem, inViewOnce } from '../../lib/motion/presets';
 import { COURSES } from '../../lib/data/programmeData.js';
 import { getHighMarketabilityCourses, getMarketability } from '../../lib/data/marketability.js';
 import { getGrouping } from '../../lib/data/registry.js';
@@ -54,22 +55,25 @@ export default function MarketableCourses({
   if (courses.length === 0) return null;
 
   return (
-    <section className="bg-white py-20 sm:py-24">
+    <section className="bg-cream py-20 sm:py-24">
       <div className="container-premium">
         <SectionHeading eyebrow="High Demand" title={title} subtitle={subtitle} />
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {courses.map((course, idx) => {
+        <motion.div
+          variants={staggerContainer(0.06, 0.1)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={inViewOnce}
+          className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {courses.map((course) => {
             const grouping = getGrouping(course.groupingCode);
             const isFree = course.isFree === true;
 
             return (
               <motion.div
                 key={course.code}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-80px' }}
-                transition={{ duration: 0.45, delay: idx * 0.05 }}
+                variants={fadeUpItem}
                 className="group flex flex-col rounded-2xl border border-navy-100 bg-white p-6 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg"
               >
                 {/* Badges */}
@@ -79,7 +83,7 @@ export default function MarketableCourses({
                     High Demand
                   </span>
                   {isFree && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 font-body text-[11px] font-bold uppercase tracking-wide text-emerald-700">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gold-500/10 px-2.5 py-1 font-body text-[11px] font-bold uppercase tracking-wide text-gold-700">
                       <Sparkles size={11} />
                       Free
                     </span>
@@ -112,7 +116,7 @@ export default function MarketableCourses({
                 <div className="mt-5 flex items-center justify-between border-t border-navy-100 pt-4">
                   <span
                     className={`font-body text-sm font-bold ${
-                      isFree ? 'text-emerald-600' : 'text-navy-900'
+                      isFree ? 'text-gold-600' : 'text-navy-900'
                     }`}
                   >
                     {isFree ? 'Free' : course.fees || `KES ${(course.feesUSD || 0) * 130}`}
@@ -131,13 +135,13 @@ export default function MarketableCourses({
               </motion.div>
             );
           })}
-        </div>
+          </motion.div>
 
         {/* Footer CTA */}
         <div className="mt-10 text-center">
           <Link
             to={division === 'labs' ? '/labs' : division === 'academy' ? '/academy' : '/courses'}
-            className="inline-flex items-center gap-2 rounded-full bg-navy-900 px-6 py-3 font-body text-sm font-bold text-white transition-colors hover:bg-navy-800"
+            className="btn-outline inline-flex items-center gap-2"
           >
             Browse all {division === 'labs' ? 'Labs courses' : division === 'academy' ? 'Academy courses' : 'courses'}
             <ArrowRight size={16} />

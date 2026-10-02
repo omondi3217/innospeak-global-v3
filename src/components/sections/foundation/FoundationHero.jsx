@@ -24,7 +24,7 @@ export default function FoundationHeroImage() {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
       className="relative mx-auto w-full max-w-lg lg:max-w-none"
     >
       <div className="relative overflow-hidden rounded-3xl border border-navy-100 shadow-premium-lg">
@@ -37,7 +37,7 @@ export default function FoundationHeroImage() {
               initial={{ opacity: 0, scale: 1.05 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
               className="absolute inset-0 h-full w-full object-cover"
             />
           </AnimatePresence>
@@ -81,7 +81,7 @@ export default function FoundationHeroImage() {
             key={card.label}
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.9 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.5, delay: 0.9 + i * 0.15, ease: [0.16, 1, 0.3, 1] }}
             whileHover={{ y: -4 }}
             className={`absolute ${card.pos} hidden items-center gap-2.5 rounded-xl border border-white/20 bg-white/90 px-3.5 py-2.5 shadow-glass backdrop-blur-md sm:flex`}
           >

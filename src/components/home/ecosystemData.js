@@ -1,30 +1,53 @@
+/**
+ * ecosystemData — three pillars in brand order:
+ * LEARN (Academy) → BUILD (Labs) → IMPACT (Foundation).
+ */
+
 export const ECOSYSTEM_CARDS = [
   {
     id: 'academy',
     name: 'InnoSpeak Global Academy',
     tagline: 'Learn. Practice. Master.',
-    description: 'Our flagship learning platform offering programmes in communication, technical, digital and leadership skills with flexible Online, Physical and Hybrid delivery.',
+    description:
+      'Structured programmes in communication, technical, digital, business and leadership skills — with flexible Online, Physical and Hybrid delivery.',
     icon: 'graduation',
     link: '/academy',
-    features: ['100+ Programmes', 'Online & Physical', 'Certified Courses', 'Expert Trainers'],
-  },
-  {
-    id: 'foundation',
-    name: 'InnoSpeak Global Foundation',
-    tagline: 'Empower. Support. Transform.',
-    description: 'A dedicated initiative providing scholarships, community outreach and youth empowerment programmes to make quality education accessible to all.',
-    icon: 'heart',
-    link: '/foundation',
-    features: ['Scholarships', 'Youth Empowerment', 'Community Outreach', 'Impact Driven'],
+    features: [
+      '346 live courses',
+      'Online · Physical · Hybrid',
+      'Verifiable certificates',
+      'Expert trainers',
+    ],
   },
   {
     id: 'labs',
     name: 'InnoSpeak Global Labs',
     tagline: 'Innovate. Build. Launch.',
-    description: 'An innovation and research hub where learners collaborate on engineering, AI, entrepreneurship and technology projects with real-world impact.',
+    description:
+      'A practical innovation hub where learners build real software, AI systems, cloud infrastructure, cybersecurity tools and engineering projects.',
     icon: 'flask',
     link: '/labs',
-    features: ['7 Innovation Schools', 'AI & Software Engineering', 'Cloud & Cybersecurity', 'Startup Incubation'],
+    features: [
+      '7 specialisation tracks',
+      'AI · Software · Cloud · Security',
+      'Hands-on projects',
+      'Industry-ready skills',
+    ],
+  },
+  {
+    id: 'foundation',
+    name: 'InnoSpeak Global Foundation',
+    tagline: 'Empower. Support. Transform.',
+    description:
+      'A dedicated initiative providing scholarships, community outreach and youth empowerment — making quality education accessible to all.',
+    icon: 'heart',
+    link: '/foundation',
+    features: [
+      'Scholarships',
+      'Youth empowerment',
+      'Community outreach',
+      'Impact-driven',
+    ],
   },
 ];
 

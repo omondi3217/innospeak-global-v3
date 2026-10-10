@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Seo from '../components/ui/Seo';
 import { Button } from '../components/ui';
 import AdmissionsHero from '../components/admissions/AdmissionsHero';
@@ -14,11 +15,6 @@ import Step6Documents from '../components/admissions/steps/Step6Documents';
 import Step7Review from '../components/admissions/steps/Step7Review';
 import { submitApplication, downloadSummary } from '../lib/supabase/applications';
 
-/**
- * generateId — crypto.randomUUID() requires a secure context (HTTPS or
- * localhost) and is undefined in some dev/preview setups. Falling back
- * avoids crashing the whole page on mount when it's unavailable.
- */
 function generateId() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
@@ -26,28 +22,33 @@ function generateId() {
   return `id-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-/**
- * Apply — the seven-step admissions form.
- *
- * `draftId` is generated once per form session and passed down to
- * Step6Documents, which needs it to group a given applicant's document
- * uploads in Supabase Storage before an application_number exists yet
- * (see lib/supabase/storage.js).
- */
 export default function Apply() {
+  const [searchParams] = useSearchParams();
+  const isFoundation = searchParams.get('division') === 'foundation';
+
   const [step, setStep] = useState(1);
   const [draftId] = useState(() => generateId());
 
   const [data, setData] = useState({
-    division: '',
-    academy: 'InnoSpeak Global Academy',
+    division: isFoundation ? 'foundation' : '',
+    academy: isFoundation ? 'InnoSpeak Global Foundation' : 'InnoSpeak Global Academy',
     pathway: '',
     programme: '',
     courseCode: '',
+    grade: '',
     duration: '',
     studyMode: '',
     fees: '',
     intake: '',
+
+    // Foundation-specific
+    foundationProgramType: '',        // 'academy' | 'labs' | 'cbe'
+    incomeBracket: '',
+    householdSize: '',
+    fundingReason: '',
+    previousSupport: '',
+    guardianName: '',
+    guardianPhone: '',
 
     firstName: '',
     middleName: '',
@@ -92,11 +93,23 @@ export default function Apply() {
     const e = {};
 
     if (step === 1) {
-      if (!data.division) e.division = 'Please select a division';
-      if (!data.pathway) e.pathway = 'Required';
-      if (!data.programme) e.programme = 'Required';
-      if (!data.intake) e.intake = 'Required';
-      if (!data.studyMode) e.studyMode = 'Required';
+      if (!isFoundation && !data.division) e.division = 'Please select a division';
+
+      if (isFoundation) {
+        if (!data.foundationProgramType) e.foundationProgramType = 'Please choose what to study';
+        if (!data.pathway) e.pathway = 'Required';
+        if (!data.programme) e.programme = 'Required';
+        if (!data.incomeBracket) e.incomeBracket = 'Required';
+        if (!data.householdSize) e.householdSize = 'Required';
+        if (!data.fundingReason || data.fundingReason.length < 30) {
+          e.fundingReason = 'Please tell us in at least 30 characters why you need funding';
+        }
+      } else {
+        if (!data.pathway) e.pathway = 'Required';
+        if (!data.programme) e.programme = 'Required';
+        if (!data.intake) e.intake = 'Required';
+        if (!data.studyMode) e.studyMode = 'Required';
+      }
     }
 
     if (step === 2) {
@@ -131,7 +144,6 @@ export default function Apply() {
     }
 
     setErrors(e);
-
     return Object.keys(e).length === 0;
   }
 
@@ -149,12 +161,10 @@ export default function Apply() {
     setSubmitError('');
 
     const allDocFiles = Object.values(data.documents || {}).flat();
-
     if (allDocFiles.some((f) => f.status === 'uploading')) {
       setSubmitError('Please wait for all documents to finish uploading before submitting.');
       return;
     }
-
     if (allDocFiles.some((f) => f.status === 'error')) {
       setSubmitError('One or more documents failed to upload. Please retry or remove them before submitting.');
       return;
@@ -162,16 +172,17 @@ export default function Apply() {
 
     try {
       setIsSubmitting(true);
-
       const sanitizedDocuments = Object.fromEntries(
         Object.entries(data.documents || {}).map(([key, docFiles]) => [
           key,
           docFiles.map(({ _file, ...rest }) => rest),
         ])
       );
-
-      const result = await submitApplication({ ...data, documents: sanitizedDocuments });
-
+      const result = await submitApplication({
+        ...data,
+        isFoundationApplication: isFoundation,
+        documents: sanitizedDocuments,
+      });
       setApplicationNumber(result.applicationNumber);
       setSubmitted(true);
     } catch (err) {
@@ -197,29 +208,32 @@ export default function Apply() {
 
   return (
     <>
-      <Seo title="Apply" path="/apply" />
+      <Seo title={isFoundation ? 'Foundation Application' : 'Apply'} path="/apply" />
 
-      <AdmissionsHero currentStep={step} totalSteps={7}>
+      <AdmissionsHero currentStep={step} totalSteps={7} variant={isFoundation ? 'foundation' : 'default'}>
         <Stepper current={step} onStepClick={setStep} />
       </AdmissionsHero>
 
       <section className="container-premium py-12">
-        {step === 1 && <Step1Programme data={data} errors={errors} update={update} />}
-
-        {step === 2 && <Step2Personal data={data} errors={errors} update={update} />}
-
-        {step === 3 && <Step3Address data={data} errors={errors} update={update} />}
-
-        {step === 4 && <Step4Education data={data} errors={errors} update={update} />}
-
-        {step === 5 && <Step5Preferences data={data} errors={errors} update={update} />}
-
-        {step === 6 && (
-          <Step6Documents data={data} errors={errors} update={update} draftId={draftId} />
+        {step === 1 && (
+          <Step1Programme
+            data={data}
+            errors={errors}
+            update={update}
+            mode={isFoundation ? 'foundation' : 'general'}
+          />
         )}
 
+        {step === 2 && <Step2Personal data={data} errors={errors} update={update} />}
+        {step === 3 && <Step3Address data={data} errors={errors} update={update} />}
+        {step === 4 && <Step4Education data={data} errors={errors} update={update} />}
+        {step === 5 && <Step5Preferences data={data} errors={errors} update={update} />}
+        {step === 6 && <Step6Documents data={data} errors={errors} update={update} draftId={draftId} />}
+
         {submitError && (
-          <div role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-body text-sm text-red-700">{submitError}</div>
+          <div role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-body text-sm text-red-700">
+            {submitError}
+          </div>
         )}
 
         {step === 7 && (
@@ -238,7 +252,6 @@ export default function Apply() {
             <Button variant="outline" onClick={previousStep} disabled={step === 1}>
               Back
             </Button>
-
             <Button variant="gold" onClick={nextStep} withArrow={false}>
               Continue
             </Button>

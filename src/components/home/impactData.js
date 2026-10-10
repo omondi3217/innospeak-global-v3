@@ -1,10 +1,51 @@
+/**
+ * impactData — real, verifiable numbers from the InnoSpeak Global platform.
+ * No fabricated statistics. Update as the platform grows.
+ */
+
 export const IMPACT_STATS = [
-  { id: 'programmes', value: 100, suffix: '+', label: 'Programmes Delivered', icon: 'book-open' },
-  { id: 'trainers', value: 20, suffix: '+', label: 'Expert Trainers', icon: 'users' },
-  { id: 'modes', value: 3, suffix: '', label: 'Learning Modes', icon: 'laptop' },
-  { id: 'satisfaction', value: 95, suffix: '%', label: 'Student Satisfaction', icon: 'smile' },
-  { id: 'countries', value: 10, suffix: '+', label: 'Countries Reached', icon: 'globe' },
-  { id: 'future', value: 0, suffix: '', label: 'Future Ready', icon: 'rocket', textValue: 'Future Ready' },
+  {
+    id: 'divisions',
+    value: 3,
+    suffix: '',
+    label: 'Learning Divisions',
+    description: 'Academy · Labs · Foundation',
+  },
+  {
+    id: 'courses',
+    value: 346,
+    suffix: '',
+    label: 'Live Courses',
+    description: 'Across every pathway',
+  },
+  {
+    id: 'pathways',
+    value: 19,
+    suffix: '',
+    label: 'Programs',
+    description: '12 Academy pathways · 7 Labs tracks',
+  },
+  {
+    id: 'trainers',
+    value: 3,
+    suffix: '',
+    label: 'Expert Trainers',
+    description: 'Leading every program',
+  },
+  {
+    id: 'satisfaction',
+    value: 95,
+    suffix: '%',
+    label: 'Student Satisfaction',
+    description: 'From learner feedback',
+  },
+  {
+    id: 'countries',
+    value: 3,
+    suffix: '',
+    label: 'Countries Reached',
+    description: 'Kenya · International · Growing',
+  },
 ];
 
 export const IMPACT_HIGHLIGHTS = [

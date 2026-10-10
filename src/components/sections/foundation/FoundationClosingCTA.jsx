@@ -1,55 +1,49 @@
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
-import { Button } from '../../ui';
-import { staggerContainer, fadeUpItem, inViewOnce } from '../../../lib/motion/presets';
-
-const container = staggerContainer(0.12, 0.1);
+import { ArrowRight, Heart } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { FOUNDATION_CLOSING } from './foundationData.js';
 
 export default function FoundationClosingCTA() {
   return (
-    <section className="relative overflow-hidden bg-navy-950 py-24 md:py-32">
-      <div className="absolute inset-0 bg-gradient-to-b from-navy-900 via-navy-800 to-navy-950" />
+    <section className="relative overflow-hidden bg-gradient-to-br from-emerald-800 via-emerald-700 to-navy-900 py-20 text-white sm:py-24">
+      {/* Single soft accent */}
+      <div className="pointer-events-none absolute -top-20 left-1/4 h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl" />
 
-      <div className="pointer-events-none absolute -left-40 top-0 h-96 w-96 rounded-full bg-gold-500/15 blur-3xl" aria-hidden="true" />
-      <div className="pointer-events-none absolute -right-40 bottom-0 h-96 w-96 rounded-full bg-gold-500/10 blur-3xl" aria-hidden="true" />
-
-      <div className="container-premium relative">
+      <div className="container-premium relative z-10">
         <motion.div
-          variants={container}
-          initial="hidden"
-          whileInView="visible"
-          viewport={inViewOnce}
-          className="mx-auto flex max-w-2xl flex-col items-center text-center"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.6 }}
+          className="mx-auto max-w-3xl text-center"
         >
-          <motion.div variants={fadeUpItem}>
-            <Sparkles size={36} className="text-gold-400" aria-hidden="true" />
-          </motion.div>
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
+            <Heart size={28} className="text-emerald-300" />
+          </div>
 
-          <motion.h2
-            variants={fadeUpItem}
-            className="mt-6 font-display text-3xl font-bold leading-snug text-white sm:text-4xl"
-          >
-            Every gift moves someone closer to their future.
-          </motion.h2>
+          <h2 className="mt-6 font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+            {FOUNDATION_CLOSING.title}
+          </h2>
 
-          <motion.p variants={fadeUpItem} className="mt-4 font-body text-base leading-8 text-navy-200">
-            Whether you give, partner, or simply share our mission — you're helping make quality
-            education accessible to those who need it most.
-          </motion.p>
+          <p className="mx-auto mt-5 max-w-2xl font-body text-base leading-7 text-emerald-50/90 sm:text-lg">
+            {FOUNDATION_CLOSING.subtitle}
+          </p>
 
-          <motion.div variants={fadeUpItem} className="mt-10 flex flex-wrap justify-center gap-4">
-            <Button href="#ways-to-give" variant="gold" size="lg">
-              Give Now
-            </Button>
-            <Button
-              to="/contact"
-              variant="outline"
-              size="lg"
-              className="border-white/30 text-white hover:bg-white hover:text-navy-900"
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+            <Link
+              to={FOUNDATION_CLOSING.primaryCta.to}
+              className="btn-gold inline-flex w-full items-center justify-center gap-2 px-7 py-3.5 sm:w-auto"
             >
-              Become a Partner
-            </Button>
-          </motion.div>
+              {FOUNDATION_CLOSING.primaryCta.label}
+              <ArrowRight size={16} />
+            </Link>
+            <a
+              href={FOUNDATION_CLOSING.secondaryCta.to}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/5 px-7 py-3.5 font-body text-sm font-bold text-white backdrop-blur-sm transition-all duration-300 hover:border-emerald-400 hover:bg-white/10 sm:w-auto"
+            >
+              {FOUNDATION_CLOSING.secondaryCta.label}
+            </a>
+          </div>
         </motion.div>
       </div>
     </section>

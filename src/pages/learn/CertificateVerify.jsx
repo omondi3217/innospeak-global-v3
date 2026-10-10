@@ -2,23 +2,60 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
   Search, ShieldCheck, XCircle, Award, Calendar, Hash,
-  User, BookOpen, Building2, Printer, AlertTriangle, ArrowLeft,
+  User, BookOpen, Building2, Printer, AlertTriangle, ArrowLeft, Heart, FlaskConical,
 } from 'lucide-react';
 import Seo from '../../components/ui/Seo.jsx';
 import SectionCard from '../../components/portal/SectionCard.jsx';
 import { verifyCertificate } from '../../lib/supabase/platform.js';
 
+// Division branding — controls colours and copy across the certificate
+const DIVISION_BRANDING = {
+  academy: {
+    name: 'InnoSpeak Global Academy',
+    short: 'Academy',
+    accent: 'gold',
+    text: 'text-gold-600',
+    bg: 'bg-gold-500',
+    gradient: 'from-gold-500 to-gold-600',
+    border: 'border-gold-500',
+    sealIcon: Award,
+  },
+  labs: {
+    name: 'InnoSpeak Global Labs',
+    short: 'Labs',
+    accent: 'navy',
+    text: 'text-navy-700',
+    bg: 'bg-navy-900',
+    gradient: 'from-navy-700 to-navy-900',
+    border: 'border-navy-700',
+    sealIcon: FlaskConical,
+  },
+  foundation: {
+    name: 'InnoSpeak Global Foundation',
+    short: 'Foundation',
+    accent: 'emerald',
+    text: 'text-emerald-700',
+    bg: 'bg-emerald-600',
+    gradient: 'from-emerald-600 to-emerald-700',
+    border: 'border-emerald-600',
+    sealIcon: Heart,
+  },
+};
+
+function getBranding(division) {
+  return DIVISION_BRANDING[(division || 'academy').toLowerCase()] || DIVISION_BRANDING.academy;
+}
+
 function VerifyResultCard({ result, onPrint }) {
   if (!result) return null;
   const isValid = result.valid;
   const isRevoked = result.status === 'revoked';
+  const branding = getBranding(result.division);
 
   return (
     <div
       className={`mt-6 rounded-2xl border p-6 ${
-        isValid
-          ? 'border-emerald-200 bg-emerald-50'
-          : 'border-rose-200 bg-rose-50'
+        isValid ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'
       }`}
     >
       <div className="flex items-center gap-3">
@@ -28,20 +65,12 @@ function VerifyResultCard({ result, onPrint }) {
           <XCircle size={28} className="text-rose-600" />
         )}
         <div>
-          <p
-            className={`font-display text-lg font-bold ${
-              isValid ? 'text-emerald-900' : 'text-rose-900'
-            }`}
-          >
+          <p className={`font-display text-lg font-bold ${isValid ? 'text-emerald-900' : 'text-rose-900'}`}>
             {isValid ? 'Certificate Verified' : 'Certificate Invalid'}
           </p>
-          <p
-            className={`font-body text-sm ${
-              isValid ? 'text-emerald-700' : 'text-rose-700'
-            }`}
-          >
+          <p className={`font-body text-sm ${isValid ? 'text-emerald-700' : 'text-rose-700'}`}>
             {isValid
-              ? 'This certificate is valid and active.'
+              ? `Issued by ${branding.name}`
               : isRevoked
                 ? 'This certificate has been revoked.'
                 : 'No matching certificate was found.'}
@@ -55,7 +84,7 @@ function VerifyResultCard({ result, onPrint }) {
             <InfoItem icon={Hash} label="Certificate ID" value={result.certificate_number} />
             <InfoItem icon={User} label="Student Name" value={result.student_name} />
             <InfoItem icon={BookOpen} label="Course" value={result.course_title} />
-            <InfoItem icon={Building2} label="Issuing Organization" value={result.issuing_organization} />
+            <InfoItem icon={Building2} label="Issuing Organization" value={branding.name} />
             <InfoItem
               icon={Calendar}
               label="Issue Date"
@@ -90,10 +119,7 @@ function VerifyResultCard({ result, onPrint }) {
 
           {isValid && (
             <div className="mt-6 print:hidden">
-              <button
-                onClick={onPrint}
-                className="btn-gold inline-flex items-center gap-2"
-              >
+              <button onClick={onPrint} className="btn-gold inline-flex items-center gap-2">
                 <Printer size={16} /> Print Certificate
               </button>
             </div>
@@ -122,6 +148,9 @@ function InfoItem({ icon: Icon, label, value }) {
 
 function PrintableCertificate({ result }) {
   if (!result || !result.valid) return null;
+  const branding = getBranding(result.division);
+  const SealIcon = branding.sealIcon;
+
   const issueDate = new Date(result.issue_date).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   });
@@ -129,26 +158,34 @@ function PrintableCertificate({ result }) {
     year: 'numeric', month: 'long', day: 'numeric',
   });
 
+  // Border colour changes by division
+  const outerBorder = `border-4 ${branding.border}`;
+  const cornerBorder = branding.accent === 'emerald'
+    ? 'border-emerald-700'
+    : branding.accent === 'navy'
+      ? 'border-navy-900'
+      : 'border-navy-900';
+
   return (
     <div className="hidden print:block">
-      <div className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl border-4 border-gold-500 bg-white p-12">
-        <div className="pointer-events-none absolute left-0 top-0 h-24 w-24 border-l-4 border-t-4 border-navy-900 rounded-tl-3xl" />
-        <div className="pointer-events-none absolute right-0 top-0 h-24 w-24 border-r-4 border-t-4 border-navy-900 rounded-tr-3xl" />
-        <div className="pointer-events-none absolute bottom-0 left-0 h-24 w-24 border-b-4 border-l-4 border-navy-900 rounded-bl-3xl" />
-        <div className="pointer-events-none absolute bottom-0 right-0 h-24 w-24 border-b-4 border-r-4 border-navy-900 rounded-br-3xl" />
+      <div className={`relative mx-auto max-w-3xl overflow-hidden rounded-3xl ${outerBorder} bg-white p-12`}>
+        <div className={`pointer-events-none absolute left-0 top-0 h-24 w-24 border-l-4 border-t-4 ${cornerBorder} rounded-tl-3xl`} />
+        <div className={`pointer-events-none absolute right-0 top-0 h-24 w-24 border-r-4 border-t-4 ${cornerBorder} rounded-tr-3xl`} />
+        <div className={`pointer-events-none absolute bottom-0 left-0 h-24 w-24 border-b-4 border-l-4 ${cornerBorder} rounded-bl-3xl`} />
+        <div className={`pointer-events-none absolute bottom-0 right-0 h-24 w-24 border-b-4 border-r-4 ${cornerBorder} rounded-br-3xl`} />
 
         <div className="relative z-10 text-center">
           <div className="flex flex-col items-center gap-2">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-navy-900">
-              <Award size={28} className="text-gold-400" />
+            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${branding.bg}`}>
+              <SealIcon size={28} className="text-white" />
             </div>
             <p className="font-display text-lg font-bold tracking-wide text-navy-900">
-              InnoSpeak Global
+              {branding.name}
             </p>
-            <div className="mt-1 h-px w-32 bg-gold-500" />
+            <div className={`mt-1 h-px w-32 ${branding.accent === 'emerald' ? 'bg-emerald-600' : 'bg-gold-500'}`} />
           </div>
 
-          <p className="mt-6 font-body text-xs font-semibold uppercase tracking-[0.3em] text-gold-600">
+          <p className={`mt-6 font-body text-xs font-semibold uppercase tracking-[0.3em] ${branding.text}`}>
             Certificate of Completion
           </p>
           <p className="mt-6 font-body text-sm text-navy-500">This certifies that</p>
@@ -174,8 +211,8 @@ function PrintableCertificate({ result }) {
           <div className="mt-10 flex items-end justify-center gap-12">
             <div className="text-center">
               <div className="h-8 w-40 border-b border-navy-300" />
-              <p className="mt-1 font-body text-xs font-semibold text-navy-600">InnoSpeak Global</p>
-              <p className="font-body text-xs text-navy-400">Issuing Organization</p>
+              <p className="mt-1 font-body text-xs font-semibold text-navy-600">{branding.short} Director</p>
+              <p className="font-body text-xs text-navy-400">{branding.name}</p>
             </div>
             {result.instructor_name && (
               <div className="text-center">
@@ -190,6 +227,11 @@ function PrintableCertificate({ result }) {
             <p className="font-body text-xs text-navy-400">
               Certificate ID: <strong className="text-navy-600">{result.certificate_number}</strong>
             </p>
+            {branding.accent === 'emerald' && (
+              <p className="mt-1 inline-flex items-center gap-1 font-body text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+                <Heart size={10} /> Foundation-funded award
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -224,9 +266,7 @@ export default function CertificateVerify() {
   }, []);
 
   useEffect(() => {
-    if (initialNumber) {
-      doVerify(initialNumber);
-    }
+    if (initialNumber) doVerify(initialNumber);
   }, [initialNumber, doVerify]);
 
   function submit(e) {
@@ -246,7 +286,6 @@ export default function CertificateVerify() {
         path={`/verify-certificate${initialNumber ? `/${initialNumber}` : ''}`}
       />
 
-      {/* Hero */}
       <section className="bg-gradient-to-br from-navy-900 to-navy-800 text-white">
         <div className="container-premium py-16 sm:py-20">
           <p className="font-body text-xs font-semibold uppercase tracking-wider text-gold-300">
@@ -263,7 +302,6 @@ export default function CertificateVerify() {
       </section>
 
       <div className="container-premium py-12">
-        {/* Search form (hidden when printing) */}
         <div className="print:hidden">
           <SectionCard>
             <form onSubmit={submit} className="flex flex-col gap-3 sm:flex-row">
@@ -282,20 +320,16 @@ export default function CertificateVerify() {
                 {loading ? 'Checking…' : 'Verify'}
               </button>
             </form>
-            {error && (
-              <p className="mt-4 font-body text-sm text-rose-600">{error}</p>
-            )}
+            {error && <p className="mt-4 font-body text-sm text-rose-600">{error}</p>}
           </SectionCard>
         </div>
 
-        {/* Results */}
         {result && (
           <div className="mt-6 print:hidden">
             <VerifyResultCard result={result} onPrint={handlePrint} />
           </div>
         )}
 
-        {/* No result found */}
         {searched && !loading && !result && !error && (
           <div className="mt-6 print:hidden">
             <div className="flex items-center gap-3 rounded-xl bg-navy-50 p-5">
@@ -307,7 +341,6 @@ export default function CertificateVerify() {
           </div>
         )}
 
-        {/* Printable certificate (only visible when printing) */}
         <PrintableCertificate result={result} />
       </div>
     </>

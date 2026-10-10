@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion';
-import { MessageCircle, Cpu, Crown, Palette, Sparkles, BookOpen, ArrowRight } from 'lucide-react';
+import {
+  MessageCircle, Cpu, Crown, Palette, Sparkles, BookOpen, ArrowRight,
+} from 'lucide-react';
 import SectionHeading from '../ui/SectionHeading.jsx';
 import PathwayCard from './PathwayCard.jsx';
 import Button from '../ui/Button.jsx';
-import { PATHWAY_BADGES, PATHWAYS } from './pathwaysData.js';
+import { PATHWAY_BADGES, getInDemandCourses } from './pathwaysData.js';
 
 const BADGE_ICONS = {
   'message-circle': MessageCircle,
@@ -15,15 +17,18 @@ const BADGE_ICONS = {
 };
 
 export default function Pathways() {
+  const courses = getInDemandCourses(8);
+
   return (
     <section className="bg-cream py-20 sm:py-24">
       <div className="container-premium">
         <SectionHeading
-          eyebrow="Learning Pathways"
-          title="Programmes Designed for Every Goal"
-          subtitle="Whether you are starting out or levelling up, our pathways in Communication, Technical and Leadership skills guide your journey from foundation to mastery."
+          eyebrow="In-Demand Skills"
+          title="Skills Employers Are Hiring For Right Now"
+          subtitle="Courses pulled from our live catalogue and matched to current employer demand in Kenya and worldwide — communication, digital, business, creative, life skills and education."
         />
 
+        {/* Category badges */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -47,12 +52,14 @@ export default function Pathways() {
           })}
         </motion.div>
 
+        {/* Course grid — real marketable courses */}
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {PATHWAYS.map((pathway, i) => (
-            <PathwayCard key={pathway.id} pathway={pathway} index={i} />
+          {courses.map((course, i) => (
+            <PathwayCard key={course.code} course={course} index={i} />
           ))}
         </div>
 
+        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -60,8 +67,8 @@ export default function Pathways() {
           transition={{ duration: 0.5 }}
           className="mt-12 text-center"
         >
-          <Button to="/academy" variant="gold" size="lg" className="group">
-            View All Programmes
+          <Button to="/courses" variant="gold" size="lg" className="group">
+            Browse the Full Catalogue
             <ArrowRight size={18} className="ml-2 transition-transform group-hover:translate-x-1" />
           </Button>
         </motion.div>

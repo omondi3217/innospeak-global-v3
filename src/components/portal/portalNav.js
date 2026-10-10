@@ -13,6 +13,7 @@ import {
   LifeBuoy,
   GraduationCap,
   TrendingUp,
+  Heart,
 } from 'lucide-react';
 
 /**
@@ -25,6 +26,7 @@ export const portalNav = [
   { key: 'profile', label: 'Profile', path: '/portal/profile', icon: UserRound },
   { key: 'registration', label: 'Academic Registration', path: '/portal/registration', icon: ClipboardList },
   { key: 'records', label: 'Academic Records', path: '/portal/records', icon: BookOpenCheck },
+  { key: 'foundation', label: 'Foundation', path: '/portal/foundation', icon: Heart },
   { key: 'progress', label: 'My Progress', path: '/portal/progress', icon: TrendingUp },
   { key: 'finance', label: 'Fees & Finance', path: '/portal/finance', icon: Wallet },
   { key: 'timetable', label: 'Timetable', path: '/portal/timetable', icon: CalendarDays },

@@ -4,58 +4,42 @@ import { getCourseGovernance } from './catalogPolicy.js';
 /**
  * courseDetails — rich course data for the Course Details Template.
  *
- * Each entry carries structured content the template needs: overview,
- * key info, learning outcomes, modules, entry requirements, assessment
- * methods, certification, career paths, related courses, FAQs, and
- * student reviews.
+ * Only real, verified course data lives here. Courses without an entry
+ * fall back to base course fields (via buildCourseData) and show empty
+ * states in sections that need structured content (modules, reviews).
  *
- * Structured so it can later be loaded from Firestore by fetching a
- * document keyed by course code — the template reads from props,
- * not from this file directly. Courses without a rich detail entry
- * get generated defaults from their base course data.
+ * Structured so it can later be loaded from Firestore.
  */
+
+/* ──────────────────────────────────────────────────────────────
+   SHARED CONTENT
+   ────────────────────────────────────────────────────────────── */
 
 const SHARED_FAQS = [
   {
     question: 'Who can apply?',
-    answer: 'Anyone aged 16 and above with an interest in the subject. Some courses require prior qualifications — check the Entry Requirements section for details.',
+    answer:
+      'Anyone aged 16 and above with an interest in the subject. Some courses require prior qualifications — check the Entry Requirements section for details.',
   },
   {
     question: 'How do I study?',
-    answer: 'Choose the mode that suits you: online, physical (on-campus), or hybrid. Classes are scheduled on weekdays, weekends, or evenings to fit around your life.',
+    answer:
+      'Choose the mode that suits you: online, physical (on-campus), or hybrid. Classes are scheduled on weekdays, weekends, or evenings to fit around your life.',
   },
   {
     question: 'Do I receive a certificate?',
-    answer: 'Yes. Upon successful completion you receive a professional digital certificate, a transcript, and a career portfolio. Verification support is available for employers.',
+    answer:
+      'Yes. Upon successful completion you receive a professional digital certificate, a transcript, and a career portfolio. Verification support is available for employers.',
   },
   {
     question: 'Can I study online?',
-    answer: 'Absolutely. Most courses offer an online mode with live sessions, recorded materials, and interactive assignments accessible from anywhere in the world.',
+    answer:
+      'Absolutely. Most courses offer an online mode with live sessions, recorded materials, and interactive assignments accessible from anywhere in the world.',
   },
   {
     question: 'Can I pay in instalments?',
-    answer: 'Yes, flexible instalment plans are available. Contact our admissions team after applying to arrange a payment schedule that works for you.',
-  },
-];
-
-const DEFAULT_REVIEWS = [
-  {
-    name: 'Amina Hassan',
-    country: 'Kenya',
-    rating: 5,
-    text: 'The course exceeded my expectations. The instructors were knowledgeable and the practical exercises helped me apply what I learned immediately.',
-  },
-  {
-    name: 'James Okello',
-    country: 'Uganda',
-    rating: 5,
-    text: 'Excellent programme with a well-structured curriculum. I gained real skills that I now use in my job every day.',
-  },
-  {
-    name: 'Fatima Ali',
-    country: 'Somalia',
-    rating: 5,
-    text: 'The flexible schedule and online option made it possible for me to study while working. Highly recommended.',
+    answer:
+      'Yes, flexible instalment plans are available. Contact our admissions team after applying to arrange a payment schedule that works for you.',
   },
 ];
 
@@ -67,35 +51,30 @@ const DEFAULT_CERT_ITEMS = [
   { icon: 'ShieldCheck', label: 'Verification Support', description: 'Employer verification service' },
 ];
 
-const DEFAULT_ASSESSMENT = [
-  { icon: 'FileText', label: 'Assignments', description: 'Regular coursework assignments' },
-  { icon: 'Users', label: 'Practical Work', description: 'Hands-on practical exercises' },
-  { icon: 'Award', label: 'Final Assessment', description: 'Comprehensive final assessment' },
-];
-
-const DEFAULT_MODULES = [
-  { title: 'Module 1: Introduction', description: 'Core concepts and foundations.', hours: 8 },
-  { title: 'Module 2: Core Concepts', description: 'Key principles and theory.', hours: 10 },
-  { title: 'Module 3: Practical Skills', description: 'Hands-on application.', hours: 10 },
-  { title: 'Module 4: Projects', description: 'Real-world project work.', hours: 8 },
-  { title: 'Module 5: Assessment', description: 'Final assessment and feedback.', hours: 4 },
-];
-
-const DEFAULT_OUTCOMES = [
-  { icon: 'BookOpen', text: 'Develop practical skills and knowledge' },
-  { icon: 'Briefcase', text: 'Apply learning in professional contexts' },
-  { icon: 'Brain', text: 'Think critically about the subject' },
-  { icon: 'Lightbulb', text: 'Solve real-world problems' },
-];
+/* ──────────────────────────────────────────────────────────────
+   COURSE DETAILS
+   ────────────────────────────────────────────────────────────── */
 
 export const COURSE_DETAILS = {
-  // ── Global Languages & Communication Pathway ───────────────
+  // ═══ Global Languages & Communication Pathway ═══
   ENG101: {
     overview: {
-      description: 'English Speaking Fundamentals is a practical, beginner-friendly course designed to build confident, fluent spoken English for everyday and professional contexts. Through guided conversation, pronunciation drills, and real-world scenarios, you will develop the communication skills needed to express yourself clearly and naturally.',
-      targetAudience: 'Beginners and early learners who want to build confidence in spoken English, professionals who need basic English for the workplace, and students preparing for further study.',
-      objectives: ['Develop accurate pronunciation and natural intonation', 'Build a functional everyday vocabulary', 'Construct grammatically correct sentences in conversation', 'Participate confidently in introductions and small talk'],
-      outcomes: ['Speak English with greater confidence in social and professional settings', 'Understand and use common phrases and expressions naturally', 'Hold short conversations on familiar topics', 'Transition to advanced communication courses with a solid foundation'],
+      description:
+        'English Speaking Fundamentals is a practical, beginner-friendly course designed to build confident, fluent spoken English for everyday and professional contexts. Through guided conversation, pronunciation drills, and real-world scenarios, you will develop the communication skills needed to express yourself clearly and naturally.',
+      targetAudience:
+        'Beginners and early learners who want to build confidence in spoken English, professionals who need basic English for the workplace, and students preparing for further study.',
+      objectives: [
+        'Develop accurate pronunciation and natural intonation',
+        'Build a functional everyday vocabulary',
+        'Construct grammatically correct sentences in conversation',
+        'Participate confidently in introductions and small talk',
+      ],
+      outcomes: [
+        'Speak English with greater confidence in social and professional settings',
+        'Understand and use common phrases and expressions naturally',
+        'Hold short conversations on familiar topics',
+        'Transition to advanced communication courses with a solid foundation',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -113,7 +92,12 @@ export const COURSE_DETAILS = {
       { title: 'Practical Conversations', description: 'Role-plays and guided dialogues for introductions, shopping, travel, and more.', hours: 10 },
       { title: 'Assessment & Feedback', description: 'Individual speaking assessment with personalised feedback and next steps.', hours: 4 },
     ],
-    entryRequirements: ['Minimum age of 16 years', 'Basic literacy in any language', 'Internet access for online learners', 'Commitment to attend and participate'],
+    entryRequirements: [
+      'Minimum age of 16 years',
+      'Basic literacy in any language',
+      'Internet access for online learners',
+      'Commitment to attend and participate',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Weekly speaking and listening tasks' },
       { icon: 'Users', label: 'Practical Work', description: 'Guided conversation role-plays' },
@@ -124,14 +108,27 @@ export const COURSE_DETAILS = {
     careers: ['Customer Support Representative', 'Receptionist', 'Retail Assistant', 'Call Centre Agent', 'Administrative Assistant', 'Hospitality Staff'],
     relatedCourses: ['ENG102', 'ENG106', 'ENG105', 'ENG104'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   ENG102: {
     overview: {
-      description: 'Advanced English Communication refines your grammar, fluency, and professional English for high-stakes contexts. You will master complex sentence structures, formal and informal registers, and the art of persuasive communication.',
-      targetAudience: 'Learners with intermediate English who want to advance to professional-level communication, and professionals preparing for leadership or client-facing roles.',
-      objectives: ['Master advanced grammatical structures', 'Develop formal and informal communication registers', 'Build persuasive and negotiation skills', 'Write professional emails and reports'],
-      outcomes: ['Communicate fluently in professional and academic settings', 'Write clear, structured professional documents', 'Negotiate and persuade effectively in English', 'Transition to specialised communication or qualification courses'],
+      description:
+        'Advanced English Communication refines your grammar, fluency, and professional English for high-stakes contexts. You will master complex sentence structures, formal and informal registers, and the art of persuasive communication.',
+      targetAudience:
+        'Learners with intermediate English who want to advance to professional-level communication, and professionals preparing for leadership or client-facing roles.',
+      objectives: [
+        'Master advanced grammatical structures',
+        'Develop formal and informal communication registers',
+        'Build persuasive and negotiation skills',
+        'Write professional emails and reports',
+      ],
+      outcomes: [
+        'Communicate fluently in professional and academic settings',
+        'Write clear, structured professional documents',
+        'Negotiate and persuade effectively in English',
+        'Transition to specialised communication or qualification courses',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -149,7 +146,12 @@ export const COURSE_DETAILS = {
       { title: 'Advanced Conversation Practice', description: 'Debates, discussions, and professional role-plays.', hours: 8 },
       { title: 'Assessment & Certification', description: 'Written and oral assessment with feedback.', hours: 4 },
     ],
-    entryRequirements: ['Intermediate English proficiency', 'Completion of ENG101 or equivalent', 'Internet access for online learners', 'Commitment to weekly assignments'],
+    entryRequirements: [
+      'Intermediate English proficiency',
+      'Completion of ENG101 or equivalent',
+      'Internet access for online learners',
+      'Commitment to weekly assignments',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Weekly writing and speaking tasks' },
       { icon: 'Users', label: 'Practical Work', description: 'Professional communication simulations' },
@@ -160,124 +162,28 @@ export const COURSE_DETAILS = {
     careers: ['Public Relations Officer', 'Communications Specialist', 'Business Executive', 'Project Manager', 'Content Writer', 'Diplomatic Staff'],
     relatedCourses: ['ENG101', 'ENG106', 'ENG105', 'ENG104'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
-  },
-  PUB101: {
-    overview: {
-      description: 'Public Speaking Essentials is a transformative course that helps you master the art of persuasive, structured public speaking and presentation. Whether you are addressing a small team or a large audience, you will learn to speak with clarity, confidence, and impact.',
-      targetAudience: 'Professionals who give presentations, students preparing for academic defence, community leaders, and anyone who wants to overcome the fear of public speaking.',
-      objectives: ['Overcome stage fright and build speaking confidence', 'Structure speeches for maximum impact', 'Use body language and voice effectively', 'Engage and persuade any audience'],
-      outcomes: ['Deliver structured, persuasive speeches', 'Manage nervousness and project confidence', 'Use storytelling to engage audiences', 'Handle Q&A sessions with poise'],
-    },
-    languageOfInstruction: 'English',
-    learningOutcomes: [
-      { icon: 'Mic', text: 'Speak confidently in front of any audience' },
-      { icon: 'MessageSquare', text: 'Structure speeches for maximum impact' },
-      { icon: 'Users', text: 'Engage and persuade listeners' },
-      { icon: 'Brain', text: 'Overcome fear and manage nerves' },
-      { icon: 'Lightbulb', text: 'Use storytelling to connect' },
-      { icon: 'Briefcase', text: 'Present professionally in any setting' },
-    ],
-    modules: [
-      { title: 'Foundations of Public Speaking', description: 'Overcoming fear, understanding your audience, and setting goals.', hours: 6 },
-      { title: 'Speech Structure & Content', description: 'Openings, body, conclusions, and storytelling techniques.', hours: 8 },
-      { title: 'Voice & Body Language', description: 'Vocal variety, pacing, gestures, and stage presence.', hours: 8 },
-      { title: 'Persuasion & Engagement', description: 'Rhetorical devices, audience interaction, and handling Q&A.', hours: 8 },
-      { title: 'Final Presentations', description: 'Deliver a full speech with peer and instructor feedback.', hours: 6 },
-    ],
-    entryRequirements: ['Basic English speaking ability', 'Willingness to practise in front of others', 'Internet access for online learners', 'Commitment to weekly presentations'],
-    assessment: [
-      { icon: 'Mic', label: 'Presentations', description: 'Weekly speech deliveries' },
-      { icon: 'FileText', label: 'Assignments', description: 'Speech outlines and scripts' },
-      { icon: 'Users', label: 'Peer Review', description: 'Constructive feedback sessions' },
-      { icon: 'Award', label: 'Final Assessment', description: 'Full speech delivery and evaluation' },
-    ],
-    certification: { items: DEFAULT_CERT_ITEMS },
-    careers: ['Public Speaker', 'Teacher', 'Trainer', 'Community Leader', 'Sales Representative', 'Motivational Speaker'],
-    relatedCourses: ['ENG101', 'ENG102', 'ENG105', 'ENG104'],
-    faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
-  },
-  COM201: {
-    overview: {
-      description: 'Professional Communication equips you with the skills to communicate effectively in the modern workplace. From email etiquette to meeting facilitation, you will learn to navigate professional interactions with confidence and polish.',
-      targetAudience: 'Working professionals, recent graduates entering the workforce, and anyone who wants to improve their workplace communication skills.',
-      objectives: ['Master professional email and written communication', 'Facilitate and participate effectively in meetings', 'Develop active listening and feedback skills', 'Build a professional communication style'],
-      outcomes: ['Write clear, professional emails and documents', 'Communicate effectively in meetings and presentations', 'Give and receive constructive feedback', 'Build strong professional relationships'],
-    },
-    languageOfInstruction: 'English',
-    learningOutcomes: [
-      { icon: 'Mail', text: 'Write professional emails with clarity' },
-      { icon: 'Users', text: 'Facilitate and contribute to meetings' },
-      { icon: 'MessageSquare', text: 'Communicate with professional polish' },
-      { icon: 'Headphones', text: 'Listen actively and respond thoughtfully' },
-      { icon: 'Briefcase', text: 'Build strong workplace relationships' },
-      { icon: 'Lightbulb', text: 'Handle difficult conversations gracefully' },
-    ],
-    modules: [
-      { title: 'Workplace Communication Basics', description: 'Tone, register, and professional communication principles.', hours: 6 },
-      { title: 'Email & Written Communication', description: 'Email etiquette, reports, and professional correspondence.', hours: 8 },
-      { title: 'Meetings & Presentations', description: 'Agenda-setting, facilitation, and professional presentations.', hours: 8 },
-      { title: 'Feedback & Difficult Conversations', description: 'Active listening, giving feedback, and conflict resolution.', hours: 8 },
-      { title: 'Assessment & Portfolio', description: 'Practical assessment and professional communication portfolio.', hours: 6 },
-    ],
-    entryRequirements: ['Intermediate English proficiency', 'Some workplace or professional experience (recommended)', 'Internet access for online learners', 'Commitment to weekly practice'],
-    assessment: [
-      { icon: 'FileText', label: 'Assignments', description: 'Weekly written communication tasks' },
-      { icon: 'Users', label: 'Practical Work', description: 'Meeting facilitation exercises' },
-      { icon: 'Mic', label: 'Presentations', description: 'Professional presentation delivery' },
-      { icon: 'Award', label: 'Final Assessment', description: 'Comprehensive communication assessment' },
-    ],
-    certification: { items: DEFAULT_CERT_ITEMS },
-    careers: ['Administrative Officer', 'Project Coordinator', 'HR Assistant', 'Customer Success Manager', 'Business Analyst', 'Team Lead'],
-    relatedCourses: ['ENG101', 'ENG102', 'ENG106', 'ENG104'],
-    faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
-  },
-  BUS301: {
-    overview: {
-      description: 'Business Communication develops your ability to communicate strategically in business environments. From executive presentations to negotiation and cross-cultural communication, you will build the skills to lead and influence.',
-      targetAudience: 'Mid-career professionals, managers, entrepreneurs, and anyone who needs to communicate effectively in business contexts.',
-      objectives: ['Master strategic business writing', 'Develop executive presentation skills', 'Build negotiation and persuasion techniques', 'Navigate cross-cultural business communication'],
-      outcomes: ['Write strategic business documents', 'Deliver executive-level presentations', 'Negotiate effectively in business contexts', 'Communicate across cultures with confidence'],
-    },
-    languageOfInstruction: 'English',
-    learningOutcomes: [
-      { icon: 'Briefcase', text: 'Write strategic business documents' },
-      { icon: 'Mic', text: 'Deliver executive-level presentations' },
-      { icon: 'Users', text: 'Negotiate effectively in business' },
-      { icon: 'Globe', text: 'Communicate across cultures' },
-      { icon: 'Brain', text: 'Think strategically about communication' },
-      { icon: 'Lightbulb', text: 'Influence stakeholders and clients' },
-    ],
-    modules: [
-      { title: 'Strategic Business Writing', description: 'Reports, proposals, executive summaries, and strategic documents.', hours: 8 },
-      { title: 'Executive Presentations', description: 'Board-level presentations, data storytelling, and executive presence.', hours: 10 },
-      { title: 'Negotiation & Persuasion', description: 'Negotiation strategies, persuasion techniques, and conflict resolution.', hours: 10 },
-      { title: 'Cross-Cultural Communication', description: 'Cultural intelligence, international business etiquette, and global teams.', hours: 8 },
-      { title: 'Assessment & Portfolio', description: 'Capstone business communication project and assessment.', hours: 6 },
-    ],
-    entryRequirements: ['Intermediate English proficiency', 'Completion of COM201 or equivalent', 'Internet access for online learners', 'Professional experience (recommended)'],
-    assessment: [
-      { icon: 'FileText', label: 'Assignments', description: 'Strategic writing tasks' },
-      { icon: 'Mic', label: 'Presentations', description: 'Executive presentation delivery' },
-      { icon: 'Users', label: 'Negotiation', description: 'Negotiation role-play exercises' },
-      { icon: 'Award', label: 'Final Assessment', description: 'Capstone business communication project' },
-    ],
-    certification: { items: DEFAULT_CERT_ITEMS },
-    careers: ['Business Manager', 'Executive Assistant', 'Sales Manager', 'Business Consultant', 'Entrepreneur', 'Corporate Trainer'],
-    relatedCourses: ['ENG101', 'ENG102', 'ENG106', 'ENG105'],
-    faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
 
-  // ── Qualifications Pathway ──────────────────────────────────
+  // ═══ Qualifications Pathway ═══
   IEL101: {
     overview: {
-      description: 'IELTS Academic Preparation is a focused, results-driven course that equips you with the strategies, skills, and practice needed to achieve top IELTS Academic band scores. Covering all four modules — Listening, Reading, Writing, and Speaking — you will learn from certified instructors and take regular mock tests.',
-      targetAudience: 'Students planning to study abroad, professionals seeking immigration or work visas, and anyone who needs an internationally recognised English language qualification.',
-      objectives: ['Master all four IELTS modules (Listening, Reading, Writing, Speaking)', 'Develop time management strategies for the exam', 'Build academic and general vocabulary', 'Practise with authentic IELTS materials'],
-      outcomes: ['Achieve a target IELTS band score of 6.5\u20138.0', 'Approach the exam with confidence and strategy', 'Write structured Task 1 and Task 2 essays', 'Speak fluently in the IELTS interview format'],
+      description:
+        'IELTS Academic Preparation is a focused, results-driven course that equips you with the strategies, skills, and practice needed to achieve top IELTS Academic band scores. Covering all four modules — Listening, Reading, Writing, and Speaking — you will learn from certified instructors and take regular mock tests.',
+      targetAudience:
+        'Students planning to study abroad, professionals seeking immigration or work visas, and anyone who needs an internationally recognised English language qualification.',
+      objectives: [
+        'Master all four IELTS modules (Listening, Reading, Writing, Speaking)',
+        'Develop time management strategies for the exam',
+        'Build academic and general vocabulary',
+        'Practise with authentic IELTS materials',
+      ],
+      outcomes: [
+        'Achieve a target IELTS band score of 6.5–8.0',
+        'Approach the exam with confidence and strategy',
+        'Write structured Task 1 and Task 2 essays',
+        'Speak fluently in the IELTS interview format',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -295,7 +201,12 @@ export const COURSE_DETAILS = {
       { title: 'Writing Module', description: 'Task 1 (data description) and Task 2 (essay) with model answers.', hours: 12 },
       { title: 'Speaking Module & Mock Tests', description: 'Interview practice, full mock tests, and feedback.', hours: 12 },
     ],
-    entryRequirements: ['Intermediate English proficiency (IELTS 5.0+ or equivalent)', 'Familiarity with academic reading', 'Internet access for online learners', 'Commitment to daily practice'],
+    entryRequirements: [
+      'Intermediate English proficiency (IELTS 5.0+ or equivalent)',
+      'Familiarity with academic reading',
+      'Internet access for online learners',
+      'Commitment to daily practice',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Weekly module-focused tasks' },
       { icon: 'ClipboardCheck', label: 'Mock Tests', description: 'Full-length IELTS practice tests' },
@@ -312,12 +223,25 @@ export const COURSE_DETAILS = {
       { name: 'Sarah Kimani', country: 'Kenya', rating: 5, text: 'Professional instructors and authentic materials. I felt fully prepared on exam day.' },
     ],
   },
+
   IEL102: {
     overview: {
-      description: 'IELTS General Training focuses on the General Training module of the IELTS exam, designed for those seeking immigration, work visas, or vocational training in English-speaking countries. You will practise with authentic materials and develop strategies for each section.',
-      targetAudience: 'Professionals seeking immigration to English-speaking countries, skilled workers applying for work visas, and anyone needing IELTS General Training for visa purposes.',
-      objectives: ['Master the General Training Reading and Writing modules', 'Develop strategies for the Listening and Speaking sections', 'Practise with authentic General Training materials', 'Build confidence for the exam'],
-      outcomes: ['Achieve your target IELTS General Training band score', 'Write effective General Training Task 1 letters and Task 2 essays', 'Read and understand workplace and general texts', 'Speak confidently in the IELTS interview'],
+      description:
+        'IELTS General Training focuses on the General Training module of the IELTS exam, designed for those seeking immigration, work visas, or vocational training in English-speaking countries. You will practise with authentic materials and develop strategies for each section.',
+      targetAudience:
+        'Professionals seeking immigration to English-speaking countries, skilled workers applying for work visas, and anyone needing IELTS General Training for visa purposes.',
+      objectives: [
+        'Master the General Training Reading and Writing modules',
+        'Develop strategies for the Listening and Speaking sections',
+        'Practise with authentic General Training materials',
+        'Build confidence for the exam',
+      ],
+      outcomes: [
+        'Achieve your target IELTS General Training band score',
+        'Write effective General Training Task 1 letters and Task 2 essays',
+        'Read and understand workplace and general texts',
+        'Speak confidently in the IELTS interview',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -335,7 +259,12 @@ export const COURSE_DETAILS = {
       { title: 'Listening & Speaking', description: 'Listening practice and interview preparation.', hours: 10 },
       { title: 'Mock Tests & Feedback', description: 'Full mock tests and personalised feedback.', hours: 8 },
     ],
-    entryRequirements: ['Intermediate English proficiency', 'Basic familiarity with IELTS format', 'Internet access for online learners', 'Commitment to regular practice'],
+    entryRequirements: [
+      'Intermediate English proficiency',
+      'Basic familiarity with IELTS format',
+      'Internet access for online learners',
+      'Commitment to regular practice',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Weekly General Training tasks' },
       { icon: 'ClipboardCheck', label: 'Mock Tests', description: 'Full-length practice tests' },
@@ -346,14 +275,27 @@ export const COURSE_DETAILS = {
     careers: ['Immigration Applicant', 'Skilled Worker (abroad)', 'Visa Applicant', 'Vocational Trainee', 'Healthcare Worker', 'Trades Professional'],
     relatedCourses: ['IEL101', 'TOF101', 'CAM101', 'ENG102'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   TOF101: {
     overview: {
-      description: 'TOEFL Preparation is a comprehensive course that prepares you for the TOEFL iBT exam. Covering Reading, Listening, Speaking, and Writing, you will develop the academic English skills and test-taking strategies needed to achieve a high score.',
-      targetAudience: 'Students applying to universities in North America, professionals seeking academic credentials, and anyone needing a TOEFL score for admission.',
-      objectives: ['Master all four TOEFL iBT sections', 'Develop academic English skills', 'Build effective test-taking strategies', 'Practise with authentic TOEFL materials'],
-      outcomes: ['Achieve a target TOEFL score of 90\u2013110+', 'Read and comprehend academic passages', 'Write integrated and independent essays', 'Speak confidently in the speaking section'],
+      description:
+        'TOEFL Preparation is a comprehensive course that prepares you for the TOEFL iBT exam. Covering Reading, Listening, Speaking, and Writing, you will develop the academic English skills and test-taking strategies needed to achieve a high score.',
+      targetAudience:
+        'Students applying to universities in North America, professionals seeking academic credentials, and anyone needing a TOEFL score for admission.',
+      objectives: [
+        'Master all four TOEFL iBT sections',
+        'Develop academic English skills',
+        'Build effective test-taking strategies',
+        'Practise with authentic TOEFL materials',
+      ],
+      outcomes: [
+        'Achieve a target TOEFL score of 90–110+',
+        'Read and comprehend academic passages',
+        'Write integrated and independent essays',
+        'Speak confidently in the speaking section',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -371,7 +313,12 @@ export const COURSE_DETAILS = {
       { title: 'Speaking & Writing', description: 'Independent and integrated tasks with practice.', hours: 12 },
       { title: 'Mock Tests & Feedback', description: 'Full-length practice tests and feedback.', hours: 8 },
     ],
-    entryRequirements: ['Intermediate English proficiency', 'Familiarity with academic English', 'Internet access for online learners', 'Commitment to daily practice'],
+    entryRequirements: [
+      'Intermediate English proficiency',
+      'Familiarity with academic English',
+      'Internet access for online learners',
+      'Commitment to daily practice',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Weekly section-focused tasks' },
       { icon: 'ClipboardCheck', label: 'Mock Tests', description: 'Full-length TOEFL practice tests' },
@@ -382,50 +329,27 @@ export const COURSE_DETAILS = {
     careers: ['University Applicant', 'Graduate Student', 'Scholarship Candidate', 'International Student', 'Academic Researcher', 'Exchange Student'],
     relatedCourses: ['IEL101', 'IEL102', 'CAM101', 'ENG102'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
-  TES101: {
-    overview: {
-      description: 'TESOL Preparation equips you with the methodology, lesson planning skills, and classroom techniques needed to teach English to speakers of other languages. This course prepares you for TESOL certification and a global teaching career.',
-      targetAudience: 'Aspiring English teachers, current teachers seeking certification, and professionals who want to teach English globally.',
-      objectives: ['Master TESOL methodology and approaches', 'Develop lesson planning and classroom management skills', 'Build teaching materials and resources', 'Practise teaching with real learners'],
-      outcomes: ['Plan and deliver effective English lessons', 'Manage a classroom of diverse learners', 'Create engaging teaching materials', 'Pursue TESOL certification with confidence'],
-    },
-    languageOfInstruction: 'English',
-    learningOutcomes: [
-      { icon: 'BookOpen', text: 'Master TESOL methodology' },
-      { icon: 'Users', text: 'Manage a classroom of diverse learners' },
-      { icon: 'PenLine', text: 'Create effective lesson plans' },
-      { icon: 'Mic', text: 'Deliver engaging lessons' },
-      { icon: 'Briefcase', text: 'Build a teaching portfolio' },
-      { icon: 'Globe', text: 'Teach English anywhere in the world' },
-    ],
-    modules: [
-      { title: 'TESOL Methodology', description: 'Approaches, methods, and principles of teaching English.', hours: 10 },
-      { title: 'Lesson Planning', description: 'Structuring lessons, setting objectives, and assessment.', hours: 10 },
-      { title: 'Classroom Management', description: 'Managing learners, engagement, and classroom dynamics.', hours: 8 },
-      { title: 'Teaching Practice', description: 'Teaching real learners with peer and instructor feedback.', hours: 12 },
-      { title: 'Assessment & Certification', description: 'Teaching assessment and TESOL certification preparation.', hours: 8 },
-    ],
-    entryRequirements: ['Advanced English proficiency', 'Bachelor\u2019s degree or equivalent (recommended)', 'Internet access for online learners', 'Commitment to teaching practice'],
-    assessment: [
-      { icon: 'FileText', label: 'Assignments', description: 'Lesson plans and teaching materials' },
-      { icon: 'Users', label: 'Teaching Practice', description: 'Teaching real learners' },
-      { icon: 'ClipboardCheck', label: 'Peer Review', description: 'Peer observation and feedback' },
-      { icon: 'Award', label: 'Final Assessment', description: 'Teaching demonstration and portfolio' },
-    ],
-    certification: { items: DEFAULT_CERT_ITEMS },
-    careers: ['English Teacher', 'ESL Instructor', 'Online English Teacher', 'Language School Director', 'Curriculum Developer', 'Education Consultant'],
-    relatedCourses: ['IEL101', 'CAM101', 'ENG102', 'ENG105'],
-    faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
-  },
+
   CAM101: {
     overview: {
-      description: 'Cambridge English prepares you for Cambridge English qualifications, including B2 First and C1 Advanced. You will develop the reading, writing, listening, and speaking skills needed to pass these internationally recognised exams.',
-      targetAudience: 'Students and professionals seeking Cambridge English certification for study, work, or visa purposes.',
-      objectives: ['Master all Cambridge English exam sections', 'Develop advanced English skills', 'Build exam strategies and techniques', 'Practise with authentic Cambridge materials'],
-      outcomes: ['Pass the B2 First or C1 Advanced exam', 'Demonstrate advanced English proficiency', 'Use English confidently in professional settings', 'Enhance your CV with a recognised qualification'],
+      description:
+        'Cambridge English prepares you for Cambridge English qualifications, including B2 First and C1 Advanced. You will develop the reading, writing, listening, and speaking skills needed to pass these internationally recognised exams.',
+      targetAudience:
+        'Students and professionals seeking Cambridge English certification for study, work, or visa purposes.',
+      objectives: [
+        'Master all Cambridge English exam sections',
+        'Develop advanced English skills',
+        'Build exam strategies and techniques',
+        'Practise with authentic Cambridge materials',
+      ],
+      outcomes: [
+        'Pass the B2 First or C1 Advanced exam',
+        'Demonstrate advanced English proficiency',
+        'Use English confidently in professional settings',
+        'Enhance your CV with a recognised qualification',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -443,7 +367,12 @@ export const COURSE_DETAILS = {
       { title: 'Listening & Speaking', description: 'Listening comprehension and speaking tasks.', hours: 10 },
       { title: 'Mock Exams & Feedback', description: 'Full mock exams and personalised feedback.', hours: 8 },
     ],
-    entryRequirements: ['Upper-intermediate English proficiency', 'Familiarity with exam formats', 'Internet access for online learners', 'Commitment to regular practice'],
+    entryRequirements: [
+      'Upper-intermediate English proficiency',
+      'Familiarity with exam formats',
+      'Internet access for online learners',
+      'Commitment to regular practice',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Weekly exam-focused tasks' },
       { icon: 'ClipboardCheck', label: 'Mock Exams', description: 'Full-length Cambridge practice exams' },
@@ -454,14 +383,27 @@ export const COURSE_DETAILS = {
     careers: ['University Applicant', 'Professional (certified)', 'International Student', 'Visa Applicant', 'Academic Candidate', 'Global Professional'],
     relatedCourses: ['IEL101', 'IEL102', 'TOF101', 'ENG102'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   IGC101: {
     overview: {
-      description: 'IGCSE Foundation is a comprehensive course that builds a strong academic foundation for IGCSE examination success. Covering core subjects and study skills, it prepares learners for the rigour of international qualifications.',
-      targetAudience: 'Students aged 13\u201316 preparing for IGCSE, learners transitioning to international curriculum, and anyone seeking a strong academic foundation.',
-      objectives: ['Build core academic skills across key subjects', 'Develop effective study and revision strategies', 'Understand IGCSE exam format and expectations', 'Build confidence for international examinations'],
-      outcomes: ['Approach IGCSE study with confidence and strategy', 'Demonstrate strong foundational knowledge', 'Apply effective study and revision techniques', 'Progress to IGCSE O Level and beyond'],
+      description:
+        'IGCSE Foundation is a comprehensive course that builds a strong academic foundation for IGCSE examination success. Covering core subjects and study skills, it prepares learners for the rigour of international qualifications.',
+      targetAudience:
+        'Students aged 13–16 preparing for IGCSE, learners transitioning to international curriculum, and anyone seeking a strong academic foundation.',
+      objectives: [
+        'Build core academic skills across key subjects',
+        'Develop effective study and revision strategies',
+        'Understand IGCSE exam format and expectations',
+        'Build confidence for international examinations',
+      ],
+      outcomes: [
+        'Approach IGCSE study with confidence and strategy',
+        'Demonstrate strong foundational knowledge',
+        'Apply effective study and revision techniques',
+        'Progress to IGCSE O Level and beyond',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -479,7 +421,12 @@ export const COURSE_DETAILS = {
       { title: 'Sciences Foundations', description: 'Basic concepts in biology, chemistry, and physics.', hours: 10 },
       { title: 'Assessment & Exam Practice', description: 'Mock IGCSE questions and exam technique.', hours: 8 },
     ],
-    entryRequirements: ['Basic English literacy', 'Completion of primary education or equivalent', 'Internet access for online learners', 'Commitment to regular study'],
+    entryRequirements: [
+      'Basic English literacy',
+      'Completion of primary education or equivalent',
+      'Internet access for online learners',
+      'Commitment to regular study',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Weekly subject-specific tasks' },
       { icon: 'ClipboardCheck', label: 'Mock Exams', description: 'IGCSE-format practice tests' },
@@ -490,14 +437,26 @@ export const COURSE_DETAILS = {
     careers: ['IGCSE Student', 'A Level Candidate', 'International Student', 'Scholarship Applicant', 'Academic Pathway', 'University Preparation'],
     relatedCourses: ['IGC201', 'IEL101', 'ENG101', 'ICT101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   IGC201: {
     overview: {
-      description: 'IGCSE O Level provides comprehensive preparation for IGCSE O Level examinations across English, Mathematics, Sciences, and Humanities. You will develop the knowledge and exam technique needed for top grades.',
-      targetAudience: 'Students preparing for IGCSE O Level examinations, typically aged 14\u201316.',
-      objectives: ['Master core IGCSE O Level subjects', 'Develop exam technique and time management', 'Build subject-specific knowledge', 'Practise with past papers'],
-      outcomes: ['Approach IGCSE O Level exams with confidence', 'Demonstrate strong subject knowledge', 'Write structured exam responses', 'Progress to AS and A Level'],
+      description:
+        'IGCSE O Level provides comprehensive preparation for IGCSE O Level examinations across English, Mathematics, Sciences, and Humanities. You will develop the knowledge and exam technique needed for top grades.',
+      targetAudience: 'Students preparing for IGCSE O Level examinations, typically aged 14–16.',
+      objectives: [
+        'Master core IGCSE O Level subjects',
+        'Develop exam technique and time management',
+        'Build subject-specific knowledge',
+        'Practise with past papers',
+      ],
+      outcomes: [
+        'Approach IGCSE O Level exams with confidence',
+        'Demonstrate strong subject knowledge',
+        'Write structured exam responses',
+        'Progress to AS and A Level',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -515,7 +474,12 @@ export const COURSE_DETAILS = {
       { title: 'Humanities', description: 'History, geography, and social studies.', hours: 8 },
       { title: 'Exam Practice & Mock Tests', description: 'Past papers, exam technique, and mock tests.', hours: 10 },
     ],
-    entryRequirements: ['Completion of IGC101 or equivalent', 'Basic English literacy', 'Internet access for online learners', 'Commitment to regular study'],
+    entryRequirements: [
+      'Completion of IGC101 or equivalent',
+      'Basic English literacy',
+      'Internet access for online learners',
+      'Commitment to regular study',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Subject-specific tasks' },
       { icon: 'ClipboardCheck', label: 'Mock Exams', description: 'IGCSE-format mock tests' },
@@ -526,14 +490,27 @@ export const COURSE_DETAILS = {
     careers: ['IGCSE Student', 'AS Level Candidate', 'International Student', 'Scholarship Applicant', 'University Preparation', 'Academic Pathway'],
     relatedCourses: ['IGC101', 'IGC301', 'IEL101', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   IGC301: {
     overview: {
-      description: 'IGCSE AS Level prepares students for the AS Level examinations, bridging the gap between O Level and A Level with advanced subject content and critical thinking development.',
-      targetAudience: 'Students who have completed IGCSE O Level and are preparing for AS Level examinations.',
-      objectives: ['Master AS Level subject content', 'Develop critical thinking and analysis', 'Build advanced exam technique', 'Prepare for A Level study'],
-      outcomes: ['Approach AS Level exams with confidence', 'Demonstrate advanced subject knowledge', 'Analyse and evaluate complex topics', 'Progress to A Level study'],
+      description:
+        'IGCSE AS Level prepares students for the AS Level examinations, bridging the gap between O Level and A Level with advanced subject content and critical thinking development.',
+      targetAudience:
+        'Students who have completed IGCSE O Level and are preparing for AS Level examinations.',
+      objectives: [
+        'Master AS Level subject content',
+        'Develop critical thinking and analysis',
+        'Build advanced exam technique',
+        'Prepare for A Level study',
+      ],
+      outcomes: [
+        'Approach AS Level exams with confidence',
+        'Demonstrate advanced subject knowledge',
+        'Analyse and evaluate complex topics',
+        'Progress to A Level study',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -551,7 +528,12 @@ export const COURSE_DETAILS = {
       { title: 'Elective Subjects', description: 'Choose from humanities, business, or arts.', hours: 8 },
       { title: 'Exam Practice & Mock Tests', description: 'AS Level past papers and exam technique.', hours: 10 },
     ],
-    entryRequirements: ['Completion of IGC201 or equivalent (O Level)', 'Strong academic record', 'Internet access for online learners', 'Commitment to intensive study'],
+    entryRequirements: [
+      'Completion of IGC201 or equivalent (O Level)',
+      'Strong academic record',
+      'Internet access for online learners',
+      'Commitment to intensive study',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Advanced subject tasks' },
       { icon: 'ClipboardCheck', label: 'Mock Exams', description: 'AS Level mock tests' },
@@ -562,14 +544,27 @@ export const COURSE_DETAILS = {
     careers: ['AS Level Student', 'A Level Candidate', 'University Applicant', 'Scholarship Candidate', 'Academic Pathway', 'Research Pathway'],
     relatedCourses: ['IGC101', 'IGC201', 'IGC401', 'IEL101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   IGC401: {
     overview: {
-      description: 'IGCSE A Level is the most advanced IGCSE qualification, preparing students for university admission worldwide. You will master complex subject content and develop the analytical skills needed for higher education.',
-      targetAudience: 'Students who have completed AS Level and are preparing for A Level examinations and university admission.',
-      objectives: ['Master A Level subject content', 'Develop university-level analytical skills', 'Build independent research skills', 'Prepare for university admission'],
-      outcomes: ['Approach A Level exams with confidence', 'Demonstrate university-level knowledge', 'Analyse and evaluate complex topics independently', 'Gain admission to universities worldwide'],
+      description:
+        'IGCSE A Level is the most advanced IGCSE qualification, preparing students for university admission worldwide. You will master complex subject content and develop the analytical skills needed for higher education.',
+      targetAudience:
+        'Students who have completed AS Level and are preparing for A Level examinations and university admission.',
+      objectives: [
+        'Master A Level subject content',
+        'Develop university-level analytical skills',
+        'Build independent research skills',
+        'Prepare for university admission',
+      ],
+      outcomes: [
+        'Approach A Level exams with confidence',
+        'Demonstrate university-level knowledge',
+        'Analyse and evaluate complex topics independently',
+        'Gain admission to universities worldwide',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -587,7 +582,12 @@ export const COURSE_DETAILS = {
       { title: 'Specialist Electives', description: 'Specialised subjects for university preparation.', hours: 10 },
       { title: 'Exam Practice & University Prep', description: 'A Level past papers and university preparation.', hours: 12 },
     ],
-    entryRequirements: ['Completion of IGC301 or equivalent (AS Level)', 'Excellent academic record', 'Internet access for online learners', 'Commitment to intensive study'],
+    entryRequirements: [
+      'Completion of IGC301 or equivalent (AS Level)',
+      'Excellent academic record',
+      'Internet access for online learners',
+      'Commitment to intensive study',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'University-level assignments' },
       { icon: 'ClipboardCheck', label: 'Mock Exams', description: 'A Level mock examinations' },
@@ -598,16 +598,28 @@ export const COURSE_DETAILS = {
     careers: ['University Student', 'Researcher', 'Professional (certified)', 'Graduate Candidate', 'Scholarship Recipient', 'Global Career Pathway'],
     relatedCourses: ['IGC101', 'IGC201', 'IGC301', 'IEL101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
 
-  // ── Languages Pathway ───────────────────────────────────────
+  // ═══ World Languages Pathway ═══
   ARB101: {
     overview: {
-      description: 'Arabic Language is a practical, immersive course that develops your speaking, reading, and writing skills in Modern Standard Arabic. From the alphabet to everyday conversation, you will build a strong foundation in one of the world\u2019s most widely spoken languages.',
-      targetAudience: 'Beginners with no prior Arabic knowledge, professionals working with Arabic-speaking communities, and students interested in Arabic culture or Islamic studies.',
-      objectives: ['Master the Arabic alphabet and pronunciation', 'Build everyday conversational vocabulary', 'Read and write basic Arabic script', 'Understand Arabic cultural contexts'],
-      outcomes: ['Read and write the Arabic alphabet confidently', 'Hold simple conversations in Arabic', 'Understand basic spoken Arabic in daily contexts', 'Progress to intermediate Arabic study'],
+      description:
+        'Arabic Language is a practical, immersive course that develops your speaking, reading, and writing skills in Modern Standard Arabic. From the alphabet to everyday conversation, you will build a strong foundation in one of the world\u2019s most widely spoken languages.',
+      targetAudience:
+        'Beginners with no prior Arabic knowledge, professionals working with Arabic-speaking communities, and students interested in Arabic culture or Islamic studies.',
+      objectives: [
+        'Master the Arabic alphabet and pronunciation',
+        'Build everyday conversational vocabulary',
+        'Read and write basic Arabic script',
+        'Understand Arabic cultural contexts',
+      ],
+      outcomes: [
+        'Read and write the Arabic alphabet confidently',
+        'Hold simple conversations in Arabic',
+        'Understand basic spoken Arabic in daily contexts',
+        'Progress to intermediate Arabic study',
+      ],
     },
     languageOfInstruction: 'English / Arabic',
     learningOutcomes: [
@@ -625,7 +637,12 @@ export const COURSE_DETAILS = {
       { title: 'Conversational Practice', description: 'Role-plays for shopping, travel, introductions, and daily life.', hours: 10 },
       { title: 'Assessment & Next Steps', description: 'Reading, writing, and speaking assessment with feedback.', hours: 4 },
     ],
-    entryRequirements: ['No prior Arabic knowledge required', 'Basic English literacy (for instruction)', 'Internet access for online learners', 'Commitment to daily practice'],
+    entryRequirements: [
+      'No prior Arabic knowledge required',
+      'Basic English literacy (for instruction)',
+      'Internet access for online learners',
+      'Commitment to daily practice',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Weekly reading and writing tasks' },
       { icon: 'Users', label: 'Practical Work', description: 'Conversation role-plays' },
@@ -636,14 +653,27 @@ export const COURSE_DETAILS = {
     careers: ['Interpreter', 'Translator', 'Diplomatic Staff', 'NGO Worker', 'International Business', 'Arabic Teacher'],
     relatedCourses: ['SOM101', 'SWA101', 'FRE101', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   SWA101: {
     overview: {
-      description: 'Swahili Language is a practical course that builds conversational fluency in Swahili, the most widely spoken African language. You will learn greetings, everyday vocabulary, grammar, and cultural context.',
-      targetAudience: 'Beginners with no prior Swahili knowledge, professionals working in East Africa, and anyone interested in African languages and culture.',
-      objectives: ['Master Swahili pronunciation and greetings', 'Build everyday conversational vocabulary', 'Understand Swahili grammar basics', 'Develop cultural awareness'],
-      outcomes: ['Hold simple conversations in Swahili', 'Understand spoken Swahili in daily contexts', 'Read and write basic Swahili', 'Navigate East African contexts with confidence'],
+      description:
+        'Swahili Language is a practical course that builds conversational fluency in Swahili, the most widely spoken African language. You will learn greetings, everyday vocabulary, grammar, and cultural context.',
+      targetAudience:
+        'Beginners with no prior Swahili knowledge, professionals working in East Africa, and anyone interested in African languages and culture.',
+      objectives: [
+        'Master Swahili pronunciation and greetings',
+        'Build everyday conversational vocabulary',
+        'Understand Swahili grammar basics',
+        'Develop cultural awareness',
+      ],
+      outcomes: [
+        'Hold simple conversations in Swahili',
+        'Understand spoken Swahili in daily contexts',
+        'Read and write basic Swahili',
+        'Navigate East African contexts with confidence',
+      ],
     },
     languageOfInstruction: 'English / Swahili',
     learningOutcomes: [
@@ -661,20 +691,43 @@ export const COURSE_DETAILS = {
       { title: 'Conversational Practice', description: 'Role-plays for daily life, work, and travel.', hours: 8 },
       { title: 'Assessment & Feedback', description: 'Speaking, reading, and writing assessment.', hours: 4 },
     ],
-    entryRequirements: ['No prior Swahili knowledge required', 'Basic English literacy', 'Internet access for online learners', 'Commitment to daily practice'],
-    assessment: DEFAULT_ASSESSMENT,
+    entryRequirements: [
+      'No prior Swahili knowledge required',
+      'Basic English literacy',
+      'Internet access for online learners',
+      'Commitment to daily practice',
+    ],
+    assessment: [
+      { icon: 'FileText', label: 'Assignments', description: 'Weekly practice tasks' },
+      { icon: 'Users', label: 'Practical Work', description: 'Conversation role-plays' },
+      { icon: 'Mic', label: 'Speaking', description: 'Oral practice and evaluation' },
+      { icon: 'Award', label: 'Final Assessment', description: 'Reading, writing, and speaking evaluation' },
+    ],
     certification: { items: DEFAULT_CERT_ITEMS },
     careers: ['Interpreter', 'Translator', 'NGO Worker', 'Tourism Professional', 'Researcher', 'East Africa Business Professional'],
     relatedCourses: ['ARB101', 'SOM101', 'FRE101', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   SOM101: {
     overview: {
-      description: 'Somali Language is a practical course that develops your speaking, reading, and writing skills in Somali. You will learn everyday vocabulary, grammar, and cultural context for personal and professional use.',
-      targetAudience: 'Beginners with no prior Somali knowledge, professionals working with Somali-speaking communities, and diaspora reconnecting with their language.',
-      objectives: ['Master Somali pronunciation and greetings', 'Build everyday conversational vocabulary', 'Understand Somali grammar basics', 'Develop cultural awareness'],
-      outcomes: ['Hold simple conversations in Somali', 'Understand spoken Somali in daily contexts', 'Read and write basic Somali', 'Connect with Somali-speaking communities'],
+      description:
+        'Somali Language is a practical course that develops your speaking, reading, and writing skills in Somali. You will learn everyday vocabulary, grammar, and cultural context for personal and professional use.',
+      targetAudience:
+        'Beginners with no prior Somali knowledge, professionals working with Somali-speaking communities, and diaspora reconnecting with their language.',
+      objectives: [
+        'Master Somali pronunciation and greetings',
+        'Build everyday conversational vocabulary',
+        'Understand Somali grammar basics',
+        'Develop cultural awareness',
+      ],
+      outcomes: [
+        'Hold simple conversations in Somali',
+        'Understand spoken Somali in daily contexts',
+        'Read and write basic Somali',
+        'Connect with Somali-speaking communities',
+      ],
     },
     languageOfInstruction: 'English / Somali',
     learningOutcomes: [
@@ -692,20 +745,43 @@ export const COURSE_DETAILS = {
       { title: 'Conversational Practice', description: 'Role-plays for daily life, work, and community.', hours: 8 },
       { title: 'Assessment & Feedback', description: 'Speaking, reading, and writing assessment.', hours: 4 },
     ],
-    entryRequirements: ['No prior Somali knowledge required', 'Basic English literacy', 'Internet access for online learners', 'Commitment to daily practice'],
-    assessment: DEFAULT_ASSESSMENT,
+    entryRequirements: [
+      'No prior Somali knowledge required',
+      'Basic English literacy',
+      'Internet access for online learners',
+      'Commitment to daily practice',
+    ],
+    assessment: [
+      { icon: 'FileText', label: 'Assignments', description: 'Weekly practice tasks' },
+      { icon: 'Users', label: 'Practical Work', description: 'Conversation role-plays' },
+      { icon: 'Mic', label: 'Speaking', description: 'Oral practice and evaluation' },
+      { icon: 'Award', label: 'Final Assessment', description: 'Reading, writing, and speaking evaluation' },
+    ],
     certification: { items: DEFAULT_CERT_ITEMS },
     careers: ['Interpreter', 'Translator', 'NGO Worker', 'Community Worker', 'Healthcare Professional', 'Education Professional'],
     relatedCourses: ['ARB101', 'SWA101', 'FRE101', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   FRE101: {
     overview: {
-      description: 'French Language is a practical course that develops your speaking, reading, and writing skills in French. From greetings to conversation, you will build a strong foundation in one of the world\u2019s most important diplomatic and business languages.',
-      targetAudience: 'Beginners with no prior French knowledge, students planning to study in francophone countries, and professionals working with French-speaking clients.',
-      objectives: ['Master French pronunciation and greetings', 'Build everyday conversational vocabulary', 'Understand French grammar basics', 'Develop cultural awareness'],
-      outcomes: ['Hold simple conversations in French', 'Understand spoken French in daily contexts', 'Read and write basic French', 'Progress to intermediate French study'],
+      description:
+        'French Language is a practical course that develops your speaking, reading, and writing skills in French. From greetings to conversation, you will build a strong foundation in one of the world\u2019s most important diplomatic and business languages.',
+      targetAudience:
+        'Beginners with no prior French knowledge, students planning to study in francophone countries, and professionals working with French-speaking clients.',
+      objectives: [
+        'Master French pronunciation and greetings',
+        'Build everyday conversational vocabulary',
+        'Understand French grammar basics',
+        'Develop cultural awareness',
+      ],
+      outcomes: [
+        'Hold simple conversations in French',
+        'Understand spoken French in daily contexts',
+        'Read and write basic French',
+        'Progress to intermediate French study',
+      ],
     },
     languageOfInstruction: 'English / French',
     learningOutcomes: [
@@ -723,20 +799,43 @@ export const COURSE_DETAILS = {
       { title: 'Conversational Practice', description: 'Role-plays for daily life, work, and travel.', hours: 10 },
       { title: 'Assessment & Feedback', description: 'Speaking, reading, and writing assessment.', hours: 4 },
     ],
-    entryRequirements: ['No prior French knowledge required', 'Basic English literacy', 'Internet access for online learners', 'Commitment to daily practice'],
-    assessment: DEFAULT_ASSESSMENT,
+    entryRequirements: [
+      'No prior French knowledge required',
+      'Basic English literacy',
+      'Internet access for online learners',
+      'Commitment to daily practice',
+    ],
+    assessment: [
+      { icon: 'FileText', label: 'Assignments', description: 'Weekly practice tasks' },
+      { icon: 'Users', label: 'Practical Work', description: 'Conversation role-plays' },
+      { icon: 'Mic', label: 'Speaking', description: 'Oral practice and evaluation' },
+      { icon: 'Award', label: 'Final Assessment', description: 'Reading, writing, and speaking evaluation' },
+    ],
     certification: { items: DEFAULT_CERT_ITEMS },
     careers: ['Interpreter', 'Translator', 'Diplomatic Staff', 'International Business', 'Tourism Professional', 'French Teacher'],
     relatedCourses: ['ARB101', 'SWA101', 'GER101', 'SPA101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   GER101: {
     overview: {
-      description: 'German Language is a practical course that develops your speaking, reading, and writing skills in German. You will build a foundation in Europe\u2019s most spoken native language, useful for study, work, and travel in German-speaking countries.',
-      targetAudience: 'Beginners with no prior German knowledge, students planning to study in Germany, and professionals working with German-speaking clients.',
-      objectives: ['Master German pronunciation and greetings', 'Build everyday conversational vocabulary', 'Understand German grammar basics', 'Develop cultural awareness'],
-      outcomes: ['Hold simple conversations in German', 'Understand spoken German in daily contexts', 'Read and write basic German', 'Progress to intermediate German study'],
+      description:
+        'German Language is a practical course that develops your speaking, reading, and writing skills in German. You will build a foundation in Europe\u2019s most spoken native language, useful for study, work, and travel in German-speaking countries.',
+      targetAudience:
+        'Beginners with no prior German knowledge, students planning to study in Germany, and professionals working with German-speaking clients.',
+      objectives: [
+        'Master German pronunciation and greetings',
+        'Build everyday conversational vocabulary',
+        'Understand German grammar basics',
+        'Develop cultural awareness',
+      ],
+      outcomes: [
+        'Hold simple conversations in German',
+        'Understand spoken German in daily contexts',
+        'Read and write basic German',
+        'Progress to intermediate German study',
+      ],
     },
     languageOfInstruction: 'English / German',
     learningOutcomes: [
@@ -754,20 +853,43 @@ export const COURSE_DETAILS = {
       { title: 'Conversational Practice', description: 'Role-plays for daily life, work, and travel.', hours: 10 },
       { title: 'Assessment & Feedback', description: 'Speaking, reading, and writing assessment.', hours: 4 },
     ],
-    entryRequirements: ['No prior German knowledge required', 'Basic English literacy', 'Internet access for online learners', 'Commitment to daily practice'],
-    assessment: DEFAULT_ASSESSMENT,
+    entryRequirements: [
+      'No prior German knowledge required',
+      'Basic English literacy',
+      'Internet access for online learners',
+      'Commitment to daily practice',
+    ],
+    assessment: [
+      { icon: 'FileText', label: 'Assignments', description: 'Weekly practice tasks' },
+      { icon: 'Users', label: 'Practical Work', description: 'Conversation role-plays' },
+      { icon: 'Mic', label: 'Speaking', description: 'Oral practice and evaluation' },
+      { icon: 'Award', label: 'Final Assessment', description: 'Reading, writing, and speaking evaluation' },
+    ],
     certification: { items: DEFAULT_CERT_ITEMS },
     careers: ['Interpreter', 'Translator', 'Engineering Professional', 'International Business', 'Student in Germany', 'German Teacher'],
     relatedCourses: ['FRE101', 'SPA101', 'MAN101', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   SPA101: {
     overview: {
-      description: 'Spanish Language is a practical course that develops your speaking, reading, and writing skills in Spanish, the second most spoken native language in the world. You will learn everyday vocabulary, grammar, and cultural context.',
-      targetAudience: 'Beginners with no prior Spanish knowledge, professionals working with Spanish-speaking clients, and travellers to Spanish-speaking countries.',
-      objectives: ['Master Spanish pronunciation and greetings', 'Build everyday conversational vocabulary', 'Understand Spanish grammar basics', 'Develop cultural awareness'],
-      outcomes: ['Hold simple conversations in Spanish', 'Understand spoken Spanish in daily contexts', 'Read and write basic Spanish', 'Progress to intermediate Spanish study'],
+      description:
+        'Spanish Language is a practical course that develops your speaking, reading, and writing skills in Spanish, the second most spoken native language in the world. You will learn everyday vocabulary, grammar, and cultural context.',
+      targetAudience:
+        'Beginners with no prior Spanish knowledge, professionals working with Spanish-speaking clients, and travellers to Spanish-speaking countries.',
+      objectives: [
+        'Master Spanish pronunciation and greetings',
+        'Build everyday conversational vocabulary',
+        'Understand Spanish grammar basics',
+        'Develop cultural awareness',
+      ],
+      outcomes: [
+        'Hold simple conversations in Spanish',
+        'Understand spoken Spanish in daily contexts',
+        'Read and write basic Spanish',
+        'Progress to intermediate Spanish study',
+      ],
     },
     languageOfInstruction: 'English / Spanish',
     learningOutcomes: [
@@ -785,20 +907,43 @@ export const COURSE_DETAILS = {
       { title: 'Conversational Practice', description: 'Role-plays for daily life, work, and travel.', hours: 10 },
       { title: 'Assessment & Feedback', description: 'Speaking, reading, and writing assessment.', hours: 4 },
     ],
-    entryRequirements: ['No prior Spanish knowledge required', 'Basic English literacy', 'Internet access for online learners', 'Commitment to daily practice'],
-    assessment: DEFAULT_ASSESSMENT,
+    entryRequirements: [
+      'No prior Spanish knowledge required',
+      'Basic English literacy',
+      'Internet access for online learners',
+      'Commitment to daily practice',
+    ],
+    assessment: [
+      { icon: 'FileText', label: 'Assignments', description: 'Weekly practice tasks' },
+      { icon: 'Users', label: 'Practical Work', description: 'Conversation role-plays' },
+      { icon: 'Mic', label: 'Speaking', description: 'Oral practice and evaluation' },
+      { icon: 'Award', label: 'Final Assessment', description: 'Reading, writing, and speaking evaluation' },
+    ],
     certification: { items: DEFAULT_CERT_ITEMS },
     careers: ['Interpreter', 'Translator', 'International Business', 'Tourism Professional', 'Customer Support', 'Spanish Teacher'],
     relatedCourses: ['FRE101', 'GER101', 'MAN101', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   MAN101: {
     overview: {
-      description: 'Mandarin Chinese is a practical course that develops your speaking, reading, and writing skills in Mandarin Chinese, the most spoken native language in the world. You will learn tones, characters, everyday vocabulary, and cultural context.',
-      targetAudience: 'Beginners with no prior Mandarin knowledge, business professionals working with China, and students interested in Chinese language and culture.',
-      objectives: ['Master Mandarin tones and pronunciation', 'Learn basic Chinese characters', 'Build everyday conversational vocabulary', 'Understand Chinese cultural context'],
-      outcomes: ['Hold simple conversations in Mandarin', 'Read and write basic Chinese characters', 'Understand spoken Mandarin in daily contexts', 'Navigate Chinese-speaking contexts with confidence'],
+      description:
+        'Mandarin Chinese is a practical course that develops your speaking, reading, and writing skills in Mandarin Chinese, the most spoken native language in the world. You will learn tones, characters, everyday vocabulary, and cultural context.',
+      targetAudience:
+        'Beginners with no prior Mandarin knowledge, business professionals working with China, and students interested in Chinese language and culture.',
+      objectives: [
+        'Master Mandarin tones and pronunciation',
+        'Learn basic Chinese characters',
+        'Build everyday conversational vocabulary',
+        'Understand Chinese cultural context',
+      ],
+      outcomes: [
+        'Hold simple conversations in Mandarin',
+        'Read and write basic Chinese characters',
+        'Understand spoken Mandarin in daily contexts',
+        'Navigate Chinese-speaking contexts with confidence',
+      ],
     },
     languageOfInstruction: 'English / Mandarin',
     learningOutcomes: [
@@ -816,22 +961,44 @@ export const COURSE_DETAILS = {
       { title: 'Conversational Practice', description: 'Role-plays for daily life, business, and travel.', hours: 10 },
       { title: 'Assessment & Feedback', description: 'Speaking, reading, and writing assessment.', hours: 4 },
     ],
-    entryRequirements: ['No prior Mandarin knowledge required', 'Basic English literacy', 'Internet access for online learners', 'Commitment to daily practice'],
-    assessment: DEFAULT_ASSESSMENT,
+    entryRequirements: [
+      'No prior Mandarin knowledge required',
+      'Basic English literacy',
+      'Internet access for online learners',
+      'Commitment to daily practice',
+    ],
+    assessment: [
+      { icon: 'FileText', label: 'Assignments', description: 'Weekly practice tasks' },
+      { icon: 'Users', label: 'Practical Work', description: 'Conversation role-plays' },
+      { icon: 'Mic', label: 'Speaking', description: 'Oral practice and evaluation' },
+      { icon: 'Award', label: 'Final Assessment', description: 'Reading, writing, and speaking evaluation' },
+    ],
     certification: { items: DEFAULT_CERT_ITEMS },
     careers: ['Interpreter', 'Translator', 'International Business', 'Import/Export Professional', 'Manufacturing Professional', 'Mandarin Teacher'],
     relatedCourses: ['FRE101', 'GER101', 'SPA101', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
 
-  // ── Digital Skills Pathway ──────────────────────────────────
+  // ═══ Digital Skills Pathway ═══
   ICT101: {
     overview: {
-      description: 'ICT Essentials is a foundational course that builds core digital literacy and productivity skills for the modern workplace. From computer fundamentals to essential software tools, you will gain the confidence to navigate the digital world.',
-      targetAudience: 'Beginners new to computers, professionals looking to upgrade their digital skills, and anyone who wants to build foundational ICT competence.',
-      objectives: ['Understand computer hardware and software fundamentals', 'Master file management and internet navigation', 'Develop productivity with Microsoft Office and Google Workspace', 'Build safe and responsible digital habits'],
-      outcomes: ['Use a computer confidently for daily tasks', 'Create documents, spreadsheets, and presentations', 'Navigate the internet safely and efficiently', 'Progress to advanced digital skills courses'],
+      description:
+        'ICT Essentials is a foundational course that builds core digital literacy and productivity skills for the modern workplace. From computer fundamentals to essential software tools, you will gain the confidence to navigate the digital world.',
+      targetAudience:
+        'Beginners new to computers, professionals looking to upgrade their digital skills, and anyone who wants to build foundational ICT competence.',
+      objectives: [
+        'Understand computer hardware and software fundamentals',
+        'Master file management and internet navigation',
+        'Develop productivity with Microsoft Office and Google Workspace',
+        'Build safe and responsible digital habits',
+      ],
+      outcomes: [
+        'Use a computer confidently for daily tasks',
+        'Create documents, spreadsheets, and presentations',
+        'Navigate the internet safely and efficiently',
+        'Progress to advanced digital skills courses',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -849,7 +1016,12 @@ export const COURSE_DETAILS = {
       { title: 'Google Workspace', description: 'Docs, Sheets, Slides, and Drive for cloud collaboration.', hours: 8 },
       { title: 'Assessment & Certification', description: 'Practical tasks and final assessment.', hours: 4 },
     ],
-    entryRequirements: ['No prior computer experience required', 'Basic English literacy', 'Access to a computer or smartphone', 'Commitment to hands-on practice'],
+    entryRequirements: [
+      'No prior computer experience required',
+      'Basic English literacy',
+      'Access to a computer or smartphone',
+      'Commitment to hands-on practice',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Weekly practical tasks' },
       { icon: 'ClipboardCheck', label: 'Practical Work', description: 'Real-world document and spreadsheet tasks' },
@@ -860,14 +1032,27 @@ export const COURSE_DETAILS = {
     careers: ['Administrative Assistant', 'Data Entry Clerk', 'Virtual Assistant', 'Office Manager', 'Customer Support', 'Digital Entrepreneur'],
     relatedCourses: ['ICT102', 'ICT201', 'ENG101', 'ENG105'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   ICT102: {
     overview: {
-      description: 'Computer Packages is a comprehensive course covering the essential software packages used in offices worldwide. You will master word processing, spreadsheets, presentations, databases, and internet tools.',
-      targetAudience: 'Beginners who want to master office software, job seekers needing computer skills, and professionals upgrading their software proficiency.',
-      objectives: ['Master word processing with Word', 'Develop spreadsheet skills with Excel', 'Create presentations with PowerPoint', 'Use databases and internet tools'],
-      outcomes: ['Create professional documents', 'Build and analyse spreadsheets', 'Design effective presentations', 'Use office software confidently'],
+      description:
+        'Computer Packages is a comprehensive course covering the essential software packages used in offices worldwide. You will master word processing, spreadsheets, presentations, databases, and internet tools.',
+      targetAudience:
+        'Beginners who want to master office software, job seekers needing computer skills, and professionals upgrading their software proficiency.',
+      objectives: [
+        'Master word processing with Word',
+        'Develop spreadsheet skills with Excel',
+        'Create presentations with PowerPoint',
+        'Use databases and internet tools',
+      ],
+      outcomes: [
+        'Create professional documents',
+        'Build and analyse spreadsheets',
+        'Design effective presentations',
+        'Use office software confidently',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -885,20 +1070,43 @@ export const COURSE_DETAILS = {
       { title: 'Databases & Internet', description: 'Microsoft Access, internet, and email tools.', hours: 8 },
       { title: 'Assessment & Certification', description: 'Practical tasks and final assessment.', hours: 4 },
     ],
-    entryRequirements: ['Basic computer literacy', 'Basic English literacy', 'Access to a computer', 'Commitment to hands-on practice'],
-    assessment: DEFAULT_ASSESSMENT,
+    entryRequirements: [
+      'Basic computer literacy',
+      'Basic English literacy',
+      'Access to a computer',
+      'Commitment to hands-on practice',
+    ],
+    assessment: [
+      { icon: 'FileText', label: 'Assignments', description: 'Weekly practical tasks' },
+      { icon: 'ClipboardCheck', label: 'Practical Work', description: 'Real-world document and spreadsheet tasks' },
+      { icon: 'Monitor', label: 'Projects', description: 'Mini-projects using Office software' },
+      { icon: 'Award', label: 'Final Assessment', description: 'Comprehensive practical exam' },
+    ],
     certification: { items: DEFAULT_CERT_ITEMS },
     careers: ['Office Assistant', 'Data Entry Clerk', 'Administrative Officer', 'Records Clerk', 'Customer Support', 'Secretary'],
     relatedCourses: ['ICT101', 'ICT201', 'ICT202', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   ICT201: {
     overview: {
-      description: 'Microsoft Office is a focused course that takes you from basic to advanced proficiency in Word, Excel, PowerPoint, and Outlook. You will learn to create professional documents, analyse data, build presentations, and manage communications.',
-      targetAudience: 'Professionals who need advanced Microsoft Office skills, job seekers, and anyone who wants to master the Office suite.',
-      objectives: ['Master advanced Word features', 'Develop advanced Excel data analysis skills', 'Create professional PowerPoint presentations', 'Manage email and calendar with Outlook'],
-      outcomes: ['Use Microsoft Office at an advanced level', 'Create professional documents and reports', 'Analyse data with Excel formulas and charts', 'Manage professional communications'],
+      description:
+        'Microsoft Office is a focused course that takes you from basic to advanced proficiency in Word, Excel, PowerPoint, and Outlook. You will learn to create professional documents, analyse data, build presentations, and manage communications.',
+      targetAudience:
+        'Professionals who need advanced Microsoft Office skills, job seekers, and anyone who wants to master the Office suite.',
+      objectives: [
+        'Master advanced Word features',
+        'Develop advanced Excel data analysis skills',
+        'Create professional PowerPoint presentations',
+        'Manage email and calendar with Outlook',
+      ],
+      outcomes: [
+        'Use Microsoft Office at an advanced level',
+        'Create professional documents and reports',
+        'Analyse data with Excel formulas and charts',
+        'Manage professional communications',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -916,20 +1124,43 @@ export const COURSE_DETAILS = {
       { title: 'Outlook & Integration', description: 'Email, calendar, and Office integration.', hours: 6 },
       { title: 'Assessment & Certification', description: 'Practical exam and certification.', hours: 4 },
     ],
-    entryRequirements: ['Basic computer literacy (ICT101 or equivalent)', 'Basic English literacy', 'Access to a computer', 'Commitment to hands-on practice'],
-    assessment: DEFAULT_ASSESSMENT,
+    entryRequirements: [
+      'Basic computer literacy (ICT101 or equivalent)',
+      'Basic English literacy',
+      'Access to a computer',
+      'Commitment to hands-on practice',
+    ],
+    assessment: [
+      { icon: 'FileText', label: 'Assignments', description: 'Weekly practical tasks' },
+      { icon: 'ClipboardCheck', label: 'Practical Work', description: 'Real-world Office tasks' },
+      { icon: 'Monitor', label: 'Projects', description: 'Mini-projects using Office apps' },
+      { icon: 'Award', label: 'Final Assessment', description: 'Comprehensive practical exam' },
+    ],
     certification: { items: DEFAULT_CERT_ITEMS },
     careers: ['Office Manager', 'Executive Assistant', 'Data Analyst', 'Project Coordinator', 'Administrative Manager', 'Business Professional'],
     relatedCourses: ['ICT101', 'ICT102', 'ICT202', 'ENG105'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   ICT202: {
     overview: {
-      description: 'Google Workspace is a practical course that develops your skills in Google\u2019s cloud productivity suite. You will learn to create documents, manage spreadsheets, build presentations, store files, and collaborate in real time.',
-      targetAudience: 'Professionals and students who use Google Workspace, teams collaborating in the cloud, and anyone switching from Microsoft Office to Google.',
-      objectives: ['Master Google Docs, Sheets, and Slides', 'Manage files with Google Drive', 'Communicate with Gmail and Meet', 'Collaborate in real time'],
-      outcomes: ['Use Google Workspace confidently', 'Create and share cloud documents', 'Collaborate with teams in real time', 'Manage cloud storage effectively'],
+      description:
+        'Google Workspace is a practical course that develops your skills in Google\u2019s cloud productivity suite. You will learn to create documents, manage spreadsheets, build presentations, store files, and collaborate in real time.',
+      targetAudience:
+        'Professionals and students who use Google Workspace, teams collaborating in the cloud, and anyone switching from Microsoft Office to Google.',
+      objectives: [
+        'Master Google Docs, Sheets, and Slides',
+        'Manage files with Google Drive',
+        'Communicate with Gmail and Meet',
+        'Collaborate in real time',
+      ],
+      outcomes: [
+        'Use Google Workspace confidently',
+        'Create and share cloud documents',
+        'Collaborate with teams in real time',
+        'Manage cloud storage effectively',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -947,20 +1178,43 @@ export const COURSE_DETAILS = {
       { title: 'Drive, Gmail & Meet', description: 'File storage, email, and video meetings.', hours: 6 },
       { title: 'Assessment & Certification', description: 'Practical tasks and assessment.', hours: 4 },
     ],
-    entryRequirements: ['Basic computer literacy', 'Basic English literacy', 'Access to a computer with internet', 'Commitment to hands-on practice'],
-    assessment: DEFAULT_ASSESSMENT,
+    entryRequirements: [
+      'Basic computer literacy',
+      'Basic English literacy',
+      'Access to a computer with internet',
+      'Commitment to hands-on practice',
+    ],
+    assessment: [
+      { icon: 'FileText', label: 'Assignments', description: 'Weekly practical tasks' },
+      { icon: 'ClipboardCheck', label: 'Practical Work', description: 'Real-world cloud tasks' },
+      { icon: 'Monitor', label: 'Projects', description: 'Mini-projects using Google apps' },
+      { icon: 'Award', label: 'Final Assessment', description: 'Comprehensive practical exam' },
+    ],
     certification: { items: DEFAULT_CERT_ITEMS },
     careers: ['Virtual Assistant', 'Remote Worker', 'Project Coordinator', 'Content Creator', 'Online Educator', 'Cloud Collaboration Specialist'],
     relatedCourses: ['ICT101', 'ICT102', 'ICT201', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   ICT301: {
     overview: {
-      description: 'Digital Literacy is a comprehensive course that builds the skills to navigate the digital world safely and effectively. From internet safety to digital communication, online research, and digital citizenship, you will develop the confidence to thrive online.',
-      targetAudience: 'Beginners who want to build digital confidence, parents, seniors, and anyone who wants to use the internet safely and effectively.',
-      objectives: ['Build safe internet browsing habits', 'Develop digital communication skills', 'Learn online research and evaluation', 'Understand digital citizenship'],
-      outcomes: ['Navigate the internet safely', 'Communicate effectively online', 'Evaluate online information critically', 'Practice responsible digital citizenship'],
+      description:
+        'Digital Literacy is a comprehensive course that builds the skills to navigate the digital world safely and effectively. From internet safety to digital communication, online research, and digital citizenship, you will develop the confidence to thrive online.',
+      targetAudience:
+        'Beginners who want to build digital confidence, parents, seniors, and anyone who wants to use the internet safely and effectively.',
+      objectives: [
+        'Build safe internet browsing habits',
+        'Develop digital communication skills',
+        'Learn online research and evaluation',
+        'Understand digital citizenship',
+      ],
+      outcomes: [
+        'Navigate the internet safely',
+        'Communicate effectively online',
+        'Evaluate online information critically',
+        'Practice responsible digital citizenship',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -978,20 +1232,43 @@ export const COURSE_DETAILS = {
       { title: 'Digital Citizenship', description: 'Privacy, data, social media, and digital rights.', hours: 4 },
       { title: 'Assessment & Certification', description: 'Practical assessment and certification.', hours: 4 },
     ],
-    entryRequirements: ['No prior experience required', 'Basic English literacy', 'Access to a smartphone or computer', 'Commitment to learning'],
-    assessment: DEFAULT_ASSESSMENT,
+    entryRequirements: [
+      'No prior experience required',
+      'Basic English literacy',
+      'Access to a smartphone or computer',
+      'Commitment to learning',
+    ],
+    assessment: [
+      { icon: 'FileText', label: 'Assignments', description: 'Weekly practical tasks' },
+      { icon: 'ClipboardCheck', label: 'Practical Work', description: 'Real-world online tasks' },
+      { icon: 'Globe', label: 'Research', description: 'Online research exercises' },
+      { icon: 'Award', label: 'Final Assessment', description: 'Practical assessment' },
+    ],
     certification: { items: DEFAULT_CERT_ITEMS },
     careers: ['Digital Citizen', 'Online Shopper', 'Remote Worker', 'Student', 'Community Member', 'Internet User'],
     relatedCourses: ['ICT101', 'ICT102', 'CYB101', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   WEB101: {
     overview: {
-      description: 'Introduction to Web Development is a hands-on course that teaches you to build websites from scratch using HTML, CSS, and JavaScript. You will learn modern web development practices and build a portfolio of projects.',
-      targetAudience: 'Beginners interested in web development, students considering a tech career, and professionals who want to build websites.',
-      objectives: ['Master HTML structure and semantics', 'Style websites with CSS', 'Add interactivity with JavaScript', 'Build responsive, modern websites'],
-      outcomes: ['Build websites from scratch', 'Create responsive layouts', 'Add interactivity with JavaScript', 'Build a web development portfolio'],
+      description:
+        'Introduction to Web Development is a hands-on course that teaches you to build websites from scratch using HTML, CSS, and JavaScript. You will learn modern web development practices and build a portfolio of projects.',
+      targetAudience:
+        'Beginners interested in web development, students considering a tech career, and professionals who want to build websites.',
+      objectives: [
+        'Master HTML structure and semantics',
+        'Style websites with CSS',
+        'Add interactivity with JavaScript',
+        'Build responsive, modern websites',
+      ],
+      outcomes: [
+        'Build websites from scratch',
+        'Create responsive layouts',
+        'Add interactivity with JavaScript',
+        'Build a web development portfolio',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -1009,7 +1286,12 @@ export const COURSE_DETAILS = {
       { title: 'Responsive Projects', description: 'Build responsive websites from scratch.', hours: 10 },
       { title: 'Assessment & Portfolio', description: 'Final project and portfolio assessment.', hours: 8 },
     ],
-    entryRequirements: ['Basic computer literacy', 'Familiarity with using a web browser', 'Access to a computer with internet', 'Commitment to weekly coding practice'],
+    entryRequirements: [
+      'Basic computer literacy',
+      'Familiarity with using a web browser',
+      'Access to a computer with internet',
+      'Commitment to weekly coding practice',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Weekly coding tasks' },
       { icon: 'Code', label: 'Projects', description: 'Build real websites' },
@@ -1020,14 +1302,27 @@ export const COURSE_DETAILS = {
     careers: ['Junior Web Developer', 'Frontend Developer', 'Freelance Web Developer', 'Web Designer', 'WordPress Developer', 'Tech Entrepreneur'],
     relatedCourses: ['COD101', 'ICT101', 'AI101', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   COD101: {
     overview: {
-      description: 'Coding Fundamentals introduces you to the building blocks of programming and computational thinking. Through hands-on projects, you will learn core programming concepts that apply across all languages — from variables and loops to functions and data structures.',
-      targetAudience: 'Beginners interested in technology and programming, students considering a career in tech, and professionals who want to understand coding fundamentals.',
-      objectives: ['Understand core programming concepts', 'Write simple programs using variables, loops, and conditionals', 'Build basic functions and work with data', 'Develop problem-solving and computational thinking'],
-      outcomes: ['Write and run simple programs independently', 'Understand how software is built', 'Approach problems with a programmer\u2019s mindset', 'Progress to web development or specialised coding courses'],
+      description:
+        'Coding Fundamentals introduces you to the building blocks of programming and computational thinking. Through hands-on projects, you will learn core programming concepts that apply across all languages — from variables and loops to functions and data structures.',
+      targetAudience:
+        'Beginners interested in technology and programming, students considering a career in tech, and professionals who want to understand coding fundamentals.',
+      objectives: [
+        'Understand core programming concepts',
+        'Write simple programs using variables, loops, and conditionals',
+        'Build basic functions and work with data',
+        'Develop problem-solving and computational thinking',
+      ],
+      outcomes: [
+        'Write and run simple programs independently',
+        'Understand how software is built',
+        'Approach problems with a programmer\u2019s mindset',
+        'Progress to web development or specialised coding courses',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -1045,7 +1340,12 @@ export const COURSE_DETAILS = {
       { title: 'Functions & Data', description: 'Reusable functions, arrays, and basic data structures.', hours: 12 },
       { title: 'Projects & Assessment', description: 'Build a mini-project and complete a practical assessment.', hours: 8 },
     ],
-    entryRequirements: ['Basic computer literacy (ICT101 or equivalent)', 'Logical thinking and problem-solving interest', 'Access to a computer with internet', 'Commitment to weekly coding practice'],
+    entryRequirements: [
+      'Basic computer literacy (ICT101 or equivalent)',
+      'Logical thinking and problem-solving interest',
+      'Access to a computer with internet',
+      'Commitment to weekly coding practice',
+    ],
     assessment: [
       { icon: 'FileText', label: 'Assignments', description: 'Weekly coding exercises' },
       { icon: 'Code', label: 'Projects', description: 'Hands-on coding mini-projects' },
@@ -1056,14 +1356,27 @@ export const COURSE_DETAILS = {
     careers: ['Junior Developer', 'Web Developer', 'Data Analyst', 'QA Tester', 'Tech Entrepreneur', 'IT Support Specialist'],
     relatedCourses: ['WEB101', 'ICT101', 'AI101', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   AI101: {
     overview: {
-      description: 'AI Productivity Tools is a cutting-edge course that teaches you to leverage artificial intelligence tools for productivity, creativity, and professional work. You will learn to use AI assistants, automate tasks, and integrate AI into your workflow.',
-      targetAudience: 'Professionals who want to use AI tools, entrepreneurs, creatives, and anyone curious about practical AI applications.',
-      objectives: ['Master popular AI productivity tools', 'Learn to write effective AI prompts', 'Automate repetitive tasks with AI', 'Integrate AI into your professional workflow'],
-      outcomes: ['Use AI tools to boost productivity', 'Write effective prompts for AI assistants', 'Automate tasks and save time', 'Integrate AI into your work confidently'],
+      description:
+        'AI Productivity Tools is a cutting-edge course that teaches you to leverage artificial intelligence tools for productivity, creativity, and professional work. You will learn to use AI assistants, automate tasks, and integrate AI into your workflow.',
+      targetAudience:
+        'Professionals who want to use AI tools, entrepreneurs, creatives, and anyone curious about practical AI applications.',
+      objectives: [
+        'Master popular AI productivity tools',
+        'Learn to write effective AI prompts',
+        'Automate repetitive tasks with AI',
+        'Integrate AI into your professional workflow',
+      ],
+      outcomes: [
+        'Use AI tools to boost productivity',
+        'Write effective prompts for AI assistants',
+        'Automate tasks and save time',
+        'Integrate AI into your work confidently',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -1081,20 +1394,43 @@ export const COURSE_DETAILS = {
       { title: 'AI for Creativity', description: 'Image generation, content creation, and design with AI.', hours: 6 },
       { title: 'Assessment & Portfolio', description: 'AI-powered project and portfolio assessment.', hours: 6 },
     ],
-    entryRequirements: ['Basic computer literacy', 'Familiarity with web tools', 'Access to a computer with internet', 'Curiosity about AI'],
-    assessment: DEFAULT_ASSESSMENT,
+    entryRequirements: [
+      'Basic computer literacy',
+      'Familiarity with web tools',
+      'Access to a computer with internet',
+      'Curiosity about AI',
+    ],
+    assessment: [
+      { icon: 'FileText', label: 'Assignments', description: 'Weekly practical AI tasks' },
+      { icon: 'ClipboardCheck', label: 'Practical Work', description: 'Real-world AI applications' },
+      { icon: 'Cpu', label: 'Projects', description: 'AI-powered mini-projects' },
+      { icon: 'Award', label: 'Final Assessment', description: 'Build and present an AI project' },
+    ],
     certification: { items: DEFAULT_CERT_ITEMS },
     careers: ['AI-Enhanced Professional', 'Content Creator', 'Digital Entrepreneur', 'Productivity Consultant', 'Research Assistant', 'Creative Professional'],
     relatedCourses: ['COD101', 'WEB101', 'ICT101', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
+
   CYB101: {
     overview: {
-      description: 'Cyber Safety Basics is a practical course that teaches you to protect yourself and your organisation online. From password security to phishing detection, data privacy, and safe browsing, you will build essential cybersecurity awareness.',
-      targetAudience: 'Everyone who uses the internet, parents, professionals, and anyone who wants to stay safe online.',
-      objectives: ['Master password security', 'Detect and avoid phishing and scams', 'Protect your personal data and privacy', 'Browse the internet safely'],
-      outcomes: ['Create and manage strong passwords', 'Identify and avoid online threats', 'Protect your digital identity', 'Practice safe browsing habits'],
+      description:
+        'Cyber Safety Basics is a practical course that teaches you to protect yourself and your organisation online. From password security to phishing detection, data privacy, and safe browsing, you will build essential cybersecurity awareness.',
+      targetAudience:
+        'Everyone who uses the internet, parents, professionals, and anyone who wants to stay safe online.',
+      objectives: [
+        'Master password security',
+        'Detect and avoid phishing and scams',
+        'Protect your personal data and privacy',
+        'Browse the internet safely',
+      ],
+      outcomes: [
+        'Create and manage strong passwords',
+        'Identify and avoid online threats',
+        'Protect your digital identity',
+        'Practice safe browsing habits',
+      ],
     },
     languageOfInstruction: 'English',
     learningOutcomes: [
@@ -1112,15 +1448,29 @@ export const COURSE_DETAILS = {
       { title: 'Safe Browsing', description: 'Safe browsing, malware, and secure connections.', hours: 4 },
       { title: 'Assessment & Certification', description: 'Practical assessment and certification.', hours: 4 },
     ],
-    entryRequirements: ['Basic computer literacy', 'Basic English literacy', 'Access to a computer with internet', 'Commitment to learning'],
-    assessment: DEFAULT_ASSESSMENT,
+    entryRequirements: [
+      'Basic computer literacy',
+      'Basic English literacy',
+      'Access to a computer with internet',
+      'Commitment to learning',
+    ],
+    assessment: [
+      { icon: 'FileText', label: 'Assignments', description: 'Weekly practical tasks' },
+      { icon: 'ShieldCheck', label: 'Practical Work', description: 'Real-world security exercises' },
+      { icon: 'Brain', label: 'Quizzes', description: 'Scenario-based assessments' },
+      { icon: 'Award', label: 'Final Assessment', description: 'Practical assessment' },
+    ],
     certification: { items: DEFAULT_CERT_ITEMS },
     careers: ['Security-Aware Professional', 'IT Support', 'Office Worker', 'Parent', 'Community Leader', 'Safe Internet User'],
     relatedCourses: ['ICT101', 'ICT301', 'COD101', 'ENG101'],
     faqs: SHARED_FAQS,
-    reviews: DEFAULT_REVIEWS,
+    reviews: [],
   },
 };
+
+/* ──────────────────────────────────────────────────────────────
+   HELPERS
+   ────────────────────────────────────────────────────────────── */
 
 /**
  * Get full course detail data for a course code.
@@ -1133,7 +1483,6 @@ export function getCourseDetail(code) {
 /**
  * Build a complete course data object for the template, merging
  * base course data with rich detail data (if available).
- * This is the single object the template reads from.
  */
 export function buildCourseData(code) {
   const base = getProgrammeByCode(code);
@@ -1144,7 +1493,7 @@ export function buildCourseData(code) {
   const governance = getCourseGovernance(base);
 
   return {
-    // From base course data
+    // Base course data
     code: base.code,
     name: base.name,
     academy: base.academy,
@@ -1158,6 +1507,10 @@ export function buildCourseData(code) {
     level: base.level,
     language: base.language,
     fees: base.fees,
+    feesUSD: base.feesUSD,
+    isFree: base.isFree === true,
+    certificatePriceUSD: base.certificatePriceUSD,
+    division: base.division || base.pillar,
     certification: base.certification,
     entryRequirements: base.entryRequirements,
     instructor: base.instructor,
@@ -1168,28 +1521,22 @@ export function buildCourseData(code) {
     ...governance,
     status: governance.status === 'Active' ? 'Open for Applications' : governance.status,
 
-    // Rich detail (or generated defaults)
+    // Rich detail (or honest empty fallbacks)
     overview: detail?.overview || {
       description: base.fullDescription,
       targetAudience: 'Learners interested in this programme who meet the entry requirements.',
-      objectives: ['Develop core skills and knowledge in this subject area.'],
-      outcomes: ['Apply learned skills in professional or academic contexts.'],
+      objectives: [],
+      outcomes: [],
     },
     languageOfInstruction: detail?.languageOfInstruction || base.language,
-    learningOutcomes: detail?.learningOutcomes || DEFAULT_OUTCOMES,
-    modules: detail?.modules || DEFAULT_MODULES,
+    learningOutcomes: detail?.learningOutcomes || [],
+    modules: detail?.modules || [],
     entryRequirements: detail?.entryRequirements || base.entryRequirements,
-    assessment: detail?.assessment || DEFAULT_ASSESSMENT,
+    assessment: detail?.assessment || [],
     certificationItems: detail?.certification?.items || DEFAULT_CERT_ITEMS,
-    careers: detail?.careers || [
-      'Professional in the field',
-      'Freelancer',
-      'Entrepreneur',
-      'Further study candidate',
-    ],
+    careers: detail?.careers || [],
     relatedCourses: detail?.relatedCourses || [],
     faqs: detail?.faqs || SHARED_FAQS,
-    reviews: detail?.reviews || DEFAULT_REVIEWS,
+    reviews: detail?.reviews || [],
   };
 }
-

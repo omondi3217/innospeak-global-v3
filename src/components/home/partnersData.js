@@ -1,14 +1,58 @@
-export const PARTNER_LOGO_CATEGORIES = [
-  { id: 'universities', label: 'Universities & Colleges' },
-  { id: 'tvet', label: 'TVET Institutions' },
-  { id: 'technology', label: 'Technology Companies' },
-  { id: 'engineering', label: 'Engineering Organisations' },
-  { id: 'ngos', label: 'NGOs & Foundations' },
-  { id: 'international', label: 'International Education' },
-  { id: 'innovation', label: 'Innovation Hubs' },
-  { id: 'corporate', label: 'Corporate Training Partners' },
+import iceLogo from '../../assets/partners/ice.png';
+import samaritanLogo from '../../assets/partners/samaritan.png';
+
+/**
+ * Partner groups shown on the homepage trust strip.
+ * Groups with zero partners are hidden automatically.
+ */
+export const PARTNER_GROUPS = [
+  {
+    id: 'accredited',
+    label: 'Accredited by',
+    description: 'Recognised institutions that validate our programmes.',
+  },
+  {
+    id: 'partnered',
+    label: 'Partnered with',
+    description: 'Organisations we collaborate with on programmes and impact.',
+  },
+  {
+    id: 'hiring',
+    label: 'Hiring our graduates',
+    description: 'Employers who recruit InnoSpeak graduates.',
+  },
 ];
 
+/**
+ * Real partners.
+ * `group` must match a PARTNER_GROUPS id.
+ */
+export const PARTNERS = [
+  {
+    id: 'ice',
+    name: 'Innovation Centre of Excellence',
+    shortName: 'ICE',
+    group: 'partnered',
+    description:
+      'International institution advancing innovation, technical excellence and industry partnerships.',
+    location: 'International',
+    logo: iceLogo,
+    link: null,
+  },
+  {
+    id: 'samaritan',
+    name: 'Samaritan International Kenya',
+    shortName: 'Samaritan',
+    group: 'partnered',
+    description:
+      'Foundation supporting students through education, mentorship and community programmes.',
+    location: 'Kenya',
+    logo: samaritanLogo,
+    link: null,
+  },
+];
+
+// Existing partnership-opportunity cards — still used on /partnerships page.
 export const PARTNERSHIP_CARDS = [
   { id: 'academic', title: 'Academic Partnerships', description: 'Collaborate on curriculum development, student exchange and research.', icon: 'graduation' },
   { id: 'corporate', title: 'Corporate Training', description: 'Upskill employees through customised communication, technical and leadership programmes.', icon: 'briefcase' },

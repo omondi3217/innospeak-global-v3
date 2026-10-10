@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import SectionHeading from '../ui/SectionHeading.jsx';
 import WhyChooseCard from './WhyChooseCard.jsx';
-import HighlightStrip from './HighlightStrip.jsx';
 import Button from '../ui/Button.jsx';
 import { WHY_CHOOSE_FEATURES } from './whyChooseData.js';
 
@@ -20,10 +19,6 @@ export default function WhyChoose() {
           {WHY_CHOOSE_FEATURES.map((feature, i) => (
             <WhyChooseCard key={feature.id} feature={feature} index={i} />
           ))}
-        </div>
-
-        <div className="mt-12">
-          <HighlightStrip />
         </div>
 
         <motion.div

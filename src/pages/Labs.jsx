@@ -13,21 +13,45 @@ import SubmitChallenge from '../components/sections/labs/SubmitChallenge';
 export default function Labs() {
   return (
     <>
-      <Seo title="Labs" path="/labs" />
+      <Seo
+        title="InnoSpeak Labs — Practical Innovation & Engineering"
+        description="Hands-on learning across software, AI, data, cloud, cybersecurity, engineering and creative technology."
+        path="/labs"
+      />
+
+      {/* 1. Hero — unchanged */}
       <LabsHero />
+
+      {/* 2. About — Academy vs Labs comparison */}
       <AboutLabs />
+
+      {/* 3. Seven tracks with sample courses */}
       <LabTracks />
+
+      {/* 4. Full catalogue grouped by track */}
       <LabsCourseCatalogue />
+
+      {/* 5. High-demand course spotlight (shared component) */}
       <MarketableCourses
         division="labs"
         limit={6}
         title="High-Demand Labs Courses"
         subtitle="AI, cloud, cybersecurity and data courses aligned with 2026 employer demand."
       />
+
+      {/* 6. How it works — 4-step innovation process */}
       <InnovationProcess />
+
+      {/* 7. Entrepreneurship & innovation pillars */}
       <EntrepreneurshipInnovation />
+
+      {/* 8. What you walk away with */}
       <LabOutcomes />
+
+      {/* 9. FAQ */}
       <LabsFAQ />
+
+      {/* 10. Submit a challenge CTA */}
       <SubmitChallenge />
     </>
   );

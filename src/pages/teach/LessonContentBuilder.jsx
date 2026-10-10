@@ -1,7 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Save, Eye, Pencil, Plus, Trash2, X, GripVertical, BookOpen, Video, FileText, Headphones, Presentation, Link as LinkIcon, Download, Upload, CircleCheck as CheckCircle2, CircleAlert as AlertCircle, Play, ArrowUp, ArrowDown, Target, ListChecks, File, ExternalLink } from 'lucide-react';
+import {
+  ArrowLeft, Save, Eye, Pencil, Plus, Trash2, X, GripVertical, BookOpen,
+  Video, FileText, Headphones, Presentation, Link as LinkIcon, Download,
+  Upload, CircleCheck as CheckCircle2, CircleAlert as AlertCircle, Play,
+  ArrowUp, ArrowDown, Target, ListChecks, File, ExternalLink,
+} from 'lucide-react';
 import Seo from '../../components/ui/Seo.jsx';
 import SectionCard from '../../components/portal/SectionCard.jsx';
 import StatusBadge from '../../components/portal/StatusBadge.jsx';
@@ -15,6 +20,8 @@ import {
 } from '../../lib/supabase/lms';
 import QuizEditor from '../../components/teach/QuizEditor.jsx';
 import AssignmentEditor from '../../components/teach/AssignmentEditor.jsx';
+import CompassAssistButton from '../../components/teach/CompassAssistButton.jsx';
+import { resolveLmsCourse } from '../../lib/data/lmsCourse';
 
 const RESOURCE_TYPES = [
   { value: 'video', label: 'Video', icon: Video },
@@ -40,7 +47,10 @@ function getIcon(type) {
   return found ? found.icon : File;
 }
 
-// ── Rich Text Editor (lightweight, no external deps) ──────────────
+/* ──────────────────────────────────────────────────────────────
+   Rich Text Editor (lightweight, no external deps)
+   ────────────────────────────────────────────────────────────── */
+
 function RichTextEditor({ value, onChange, placeholder }) {
   const [active, setActive] = useState(false);
 
@@ -83,7 +93,10 @@ function RichTextEditor({ value, onChange, placeholder }) {
   );
 }
 
-// ── Resource Card ─────────────────────────────────────────────────
+/* ──────────────────────────────────────────────────────────────
+   Resource Card
+   ────────────────────────────────────────────────────────────── */
+
 function ResourceCard({ resource, onEdit, onDelete, onMoveUp, onMoveDown, canUp, canDown }) {
   const Icon = getIcon(resource.resource_type);
   return (
@@ -110,7 +123,10 @@ function ResourceCard({ resource, onEdit, onDelete, onMoveUp, onMoveDown, canUp,
   );
 }
 
-// ── Resource Form (add/edit) ──────────────────────────────────────
+/* ──────────────────────────────────────────────────────────────
+   Resource Form (add/edit)
+   ────────────────────────────────────────────────────────────── */
+
 function ResourceForm({ onSave, onCancel, initial }) {
   const [form, setForm] = useState({
     title: initial?.title || '',
@@ -222,7 +238,10 @@ function ResourceForm({ onSave, onCancel, initial }) {
   );
 }
 
-// ── Student Preview ────────────────────────────────────────────────
+/* ──────────────────────────────────────────────────────────────
+   Student Preview
+   ────────────────────────────────────────────────────────────── */
+
 function StudentPreview({ lesson, resources }) {
   const Icon = getIcon;
   return (
@@ -299,7 +318,10 @@ function StudentPreview({ lesson, resources }) {
   );
 }
 
-// ── Main Component ─────────────────────────────────────────────────
+/* ──────────────────────────────────────────────────────────────
+   Main Component
+   ────────────────────────────────────────────────────────────── */
+
 export default function LessonContentBuilder() {
   const { lessonId } = useParams();
   const [state, setState] = useState({ loading: true, error: null, lesson: null, course: null, resources: [] });
@@ -329,7 +351,11 @@ export default function LessonContentBuilder() {
           status: lesson.status || 'draft',
         });
         setObjectives(lesson.learning_objectives || []);
-        getCourse(lesson.modules.course_id).then((c) => setState((p) => ({ ...p, course: c }))).catch(() => {});
+        // Load course through resolveLmsCourse so it carries catalogue metadata
+        // (pathway, level, code) — Compass uses these to draft better content.
+        getCourse(lesson.modules.course_id)
+          .then((c) => setState((p) => ({ ...p, course: resolveLmsCourse(c) })))
+          .catch(() => {});
       })
       .catch(() => setState({ loading: false, error: 'Could not load this lesson.', lesson: null, resources: [] }));
   }, [lessonId]);
@@ -407,6 +433,54 @@ export default function LessonContentBuilder() {
     load();
   }
 
+  // Insert handler — routes Compass drafts into the right field for each mode
+  function handleCompassInsert(draft, mode) {
+    if (mode === 'objectives') {
+      const newObjs = draft
+        .split('\n')
+        .map((l) => l.replace(/^[-*\d.)\s]+/, '').trim())
+        .filter(Boolean);
+      setObjectives((prev) => [...prev.filter(Boolean), ...newObjs]);
+      return;
+    }
+
+    if (mode === 'practical') {
+      update('practical_activity', (form.practical_activity ? form.practical_activity + '\n\n' : '') + draft);
+      return;
+    }
+
+    // Convert markdown-ish text to HTML for the rich text editor
+    const toHtml = (text) =>
+      text
+        .split('\n\n')
+        .map((para) => {
+          const trimmed = para.trim();
+          if (!trimmed) return '';
+          if (trimmed.startsWith('### ')) return `<h3>${trimmed.slice(4)}</h3>`;
+          if (trimmed.startsWith('## ')) return `<h2>${trimmed.slice(3)}</h2>`;
+          if (/^[-*]\s/.test(trimmed)) {
+            const items = trimmed.split('\n').map((l) => l.replace(/^[-*]\s/, ''));
+            return `<ul>${items.map((i) => `<li>${i}</li>`).join('')}</ul>`;
+          }
+          if (/^\d+\.\s/.test(trimmed)) {
+            const items = trimmed.split('\n').map((l) => l.replace(/^\d+\.\s/, ''));
+            return `<ol>${items.map((i) => `<li>${i}</li>`).join('')}</ol>`;
+          }
+          return `<p>${trimmed.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</p>`;
+        })
+        .filter(Boolean)
+        .join('');
+
+    if (mode === 'quiz_ideas') {
+      const html = `<h3>Quiz ideas</h3><pre style="white-space:pre-wrap;font-family:inherit;font-size:0.875rem">${draft}</pre>`;
+      update('content', (form.content || '') + html);
+      return;
+    }
+
+    // lesson_body
+    update('content', (form.content || '') + toHtml(draft));
+  }
+
   if (state.loading) return <LoadingState />;
   if (state.error) return <ErrorState message={state.error} />;
 
@@ -459,7 +533,7 @@ export default function LessonContentBuilder() {
         </div>
       )}
 
-      {/* ── Preview Mode ── */}
+      {/* Preview Mode */}
       {isPreview ? (
         <div className="mt-6">
           <div className="mb-4 flex items-center gap-2 rounded-xl border border-gold-200 bg-gold-50 px-4 py-2">
@@ -469,7 +543,7 @@ export default function LessonContentBuilder() {
           <StudentPreview lesson={{ ...lesson, ...form, learning_objectives: objectives }} resources={state.resources} />
         </div>
       ) : (
-        /* ── Edit Mode ── */
+        /* Edit Mode */
         <div className="mt-6 space-y-6">
           {/* Lesson Details */}
           <SectionCard title="Lesson Details" description="Set the title, description, and learning objectives for this lesson.">
@@ -559,12 +633,23 @@ export default function LessonContentBuilder() {
             </SectionCard>
           )}
 
-          {/* Rich Text Content */}
-          <SectionCard title="Lesson Content" description="Write the main body of the lesson. Use headings, short paragraphs, and bullet lists to keep it scannable.">
+          {/* Rich Text Content — with Compass drafting assist */}
+          <SectionCard
+            title="Lesson Content"
+            description="Write the main body of the lesson. Use headings, short paragraphs, and bullet lists to keep it scannable."
+            action={
+              <CompassAssistButton
+                course={state.course}
+                lessonTitle={form.title}
+                lessonObjectives={objectives.filter(Boolean)}
+                onInsert={handleCompassInsert}
+              />
+            }
+          >
             <RichTextEditor
               value={form.content}
               onChange={(html) => update('content', html)}
-              placeholder="Write your lesson content here..."
+              placeholder="Write your lesson content here, or click 'Draft with Compass' above…"
             />
           </SectionCard>
 

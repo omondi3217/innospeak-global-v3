@@ -14,6 +14,7 @@ const quickLinks = [
   { label: 'About Us', to: '/about' },
   { label: 'Founder', to: '/founder' },
   { label: 'Impact', to: '/impact' },
+  { label: 'Career Hub', to: '/career-hub' },   // ← ADDED
   { label: 'Contact', to: '/contact' },
 ];
 

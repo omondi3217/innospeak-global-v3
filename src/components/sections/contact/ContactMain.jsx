@@ -16,7 +16,7 @@ export default function ContactMain() {
           <ContactInfo />
         </div>
 
-        <div className="mx-auto mt-12 max-w-3xl">
+        <div className="mx-auto mt-14 max-w-3xl">
           <ContactForm />
         </div>
       </div>

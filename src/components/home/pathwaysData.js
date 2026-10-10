@@ -1,19 +1,108 @@
+/**
+ * pathwaysData — homepage "In-Demand Skills" section.
+ * Courses are derived live from COURSES in programmeData.js, filtered by
+ * marketability tier, and picked round-robin across pathways for variety.
+ */
+
+import { COURSES } from '../../lib/data/programmeData.js';
+import { getMarketability } from '../../lib/data/marketability.js';
+
+// Group the 12 Academy pathways + 7 Labs tracks into 6 broad categories
+// shown as filter badges at the top of the section.
 export const PATHWAY_BADGES = [
   { id: 'communication', label: 'Communication', icon: 'message-circle' },
-  { id: 'technical', label: 'Digital & Technology', icon: 'cpu' },
-  { id: 'leadership', label: 'Leadership & Business', icon: 'crown' },
-  { id: 'creative', label: 'Creative & Media', icon: 'palette' },
-  { id: 'life-skills', label: 'Life Skills', icon: 'sparkles' },
-  { id: 'education', label: 'Education', icon: 'book-open' },
+  { id: 'technical',     label: 'Digital & Technology', icon: 'cpu' },
+  { id: 'leadership',    label: 'Business & Leadership', icon: 'crown' },
+  { id: 'creative',      label: 'Creative & Media', icon: 'palette' },
+  { id: 'life-skills',   label: 'Life Skills', icon: 'sparkles' },
+  { id: 'education',     label: 'Education & Community', icon: 'book-open' },
 ];
 
-export const PATHWAYS = [
-  { id: 'COM101', code: 'COM101', title: 'Public Speaking Fundamentals', category: 'communication', duration: '6 weeks', level: 'Beginner', icon: 'mic' },
-  { id: 'COM102', code: 'COM102', title: 'Business Communication', category: 'communication', duration: '8 weeks', level: 'Intermediate', icon: 'briefcase' },
-  { id: 'COM103', code: 'COM103', title: 'Presentation Mastery', category: 'communication', duration: '6 weeks', level: 'Advanced', icon: 'presentation' },
-  { id: 'TEC101', code: 'TEC101', title: 'Web Development Basics', category: 'technical', duration: '10 weeks', level: 'Beginner', icon: 'code' },
-  { id: 'TEC102', code: 'TEC102', title: 'Data Analytics Essentials', category: 'technical', duration: '8 weeks', level: 'Intermediate', icon: 'bar-chart' },
-  { id: 'TEC103', code: 'TEC103', title: 'AI & Machine Learning', category: 'technical', duration: '12 weeks', level: 'Advanced', icon: 'brain' },
-  { id: 'LED101', code: 'LED101', title: 'Leadership Essentials', category: 'leadership', duration: '6 weeks', level: 'Beginner', icon: 'users' },
-  { id: 'CAR108', code: 'CAR108', title: 'Career Accelerator Programme', category: 'leadership', duration: '10 weeks', level: 'Advanced', icon: 'rocket' },
-];
+// pathwayId → category bucket
+const CATEGORY_OF_PATHWAY = {
+  // Academy
+  'english-communication': 'communication',
+  'world-languages': 'communication',
+  'international-qualifications': 'communication',
+  'digital-skills-productivity': 'technical',
+  'business-entrepreneurship': 'leadership',
+  'freelancing-remote-work': 'leadership',
+  'career-global': 'leadership',
+  'creative-design-media': 'creative',
+  'personal-life-skills': 'life-skills',
+  'education-teaching-training': 'education',
+  'health-hospitality-community': 'education',
+  'kenya-curriculum-tvet': 'education',
+  // Labs tracks
+  'software-engineering': 'technical',
+  'data-analytics': 'technical',
+  'ai-intelligent-systems': 'technical',
+  'cloud-infrastructure': 'technical',
+  'cybersecurity': 'technical',
+  'engineering-smart-systems': 'technical',
+  'creative-technology': 'creative',
+};
+
+// pathwayId → icon key (resolved in PathwayCard.jsx)
+const ICON_OF_PATHWAY = {
+  'english-communication': 'mic',
+  'world-languages': 'globe',
+  'international-qualifications': 'award',
+  'digital-skills-productivity': 'laptop',
+  'business-entrepreneurship': 'briefcase',
+  'freelancing-remote-work': 'rocket',
+  'career-global': 'compass',
+  'creative-design-media': 'palette',
+  'personal-life-skills': 'sparkles',
+  'education-teaching-training': 'book-open',
+  'health-hospitality-community': 'heart',
+  'kenya-curriculum-tvet': 'graduation',
+  'software-engineering': 'code',
+  'data-analytics': 'bar-chart',
+  'ai-intelligent-systems': 'brain',
+  'cloud-infrastructure': 'cloud',
+  'cybersecurity': 'shield',
+  'engineering-smart-systems': 'cog',
+  'creative-technology': 'film',
+};
+
+/**
+ * Pick high-marketability courses round-robin across pathways, so the
+ * section always shows variety (never 8 Business courses in a row).
+ */
+export function getInDemandCourses(limit = 8) {
+  const high = COURSES.filter((c) => getMarketability(c) === 'high');
+
+  const byPathway = new Map();
+  for (const c of high) {
+    const key = c.pathwayId;
+    if (!byPathway.has(key)) byPathway.set(key, []);
+    byPathway.get(key).push(c);
+  }
+
+  // Put pathways with more courses first so they surface quickly
+  const buckets = [...byPathway.values()].sort((a, b) => b.length - a.length);
+
+  const picked = [];
+  let i = 0;
+  let guard = 0;
+  while (picked.length < limit && buckets.some((b) => b.length) && guard < 200) {
+    const bucket = buckets[i % buckets.length];
+    if (bucket.length) picked.push(bucket.shift());
+    i++;
+    guard++;
+  }
+
+  // Present each pick in the shape PathwayCard expects
+  return picked.map((c) => ({
+    id: c.code,
+    code: c.code,
+    title: c.name,
+    category: CATEGORY_OF_PATHWAY[c.pathwayId] || 'technical',
+    duration: c.duration,
+    level: c.level,
+    isFree: c.isFree === true,
+    icon: ICON_OF_PATHWAY[c.pathwayId] || 'mic',
+    href: `/courses/${c.code}`,
+  }));
+}

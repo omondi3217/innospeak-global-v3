@@ -42,18 +42,6 @@ export default function Partners() {
           <PartnershipCards />
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 0.6 }}
-          className="mt-16"
-        >
-          <h3 className="mb-6 text-center font-display text-2xl font-bold text-navy-900">
-            Why Partner With InnoSpeak Global
-          </h3>
-          <WhyPartnerHighlights />
-        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 24 }}

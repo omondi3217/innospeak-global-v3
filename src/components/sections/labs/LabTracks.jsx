@@ -1,147 +1,138 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Code, Cloud, ShieldCheck, ChartBar as BarChart3, Cog, Sparkles, ChevronDown, CircleCheck as CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowRight, Brain, Code, Cloud, ShieldCheck, BarChart3, Cog, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SectionHeading from '../../ui/SectionHeading.jsx';
 import {
   staggerContainer,
   fadeUpItem,
   inViewOnce,
-  easeOutExpo,
 } from '../../../lib/motion/presets';
 import { LAB_SCHOOLS } from '../../../lib/data/labsData';
+import { COURSES } from '../../../lib/data/programmeData';
 
 const ICON_MAP = {
-  Brain: Brain,
-  Code: Code,
-  Cloud: Cloud,
-  ShieldCheck: ShieldCheck,
-  BarChart3: BarChart3,
-  Cog: Cog,
-  Sparkles: Sparkles,
+  Brain,
+  Code,
+  Cloud,
+  ShieldCheck,
+  BarChart3,
+  Cog,
+  Sparkles,
 };
 
-const container = staggerContainer(0.1, 0.1);
+const container = staggerContainer(0.08, 0.05);
 
-function SchoolCard({ school, isOpen, onToggle }) {
-  const Icon = ICON_MAP[school.icon] || Brain;
+function TrackCard({ track, index }) {
+  const Icon = ICON_MAP[track.icon] || Brain;
+
+  const trackCourses = COURSES.filter((c) => c.pathwayId === track.id);
+  const sampleCourses = trackCourses.slice(0, 3);
 
   return (
-    <motion.div variants={fadeUpItem} className="h-full">
-      <div
-        className={`overflow-hidden rounded-2xl border bg-white shadow-premium transition-all duration-300 ${
-          isOpen
-            ? 'border-gold-300/60 shadow-premium-lg'
-            : 'border-navy-100 hover:border-gold-300/60 hover:shadow-premium-lg'
-        }`}
-      >
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={isOpen}
-          aria-controls={`school-detail-${school.id}`}
-          className="flex w-full items-start gap-4 p-7 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2"
-        >
-          <div
-            className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl transition-colors duration-300 ${
-              isOpen ? 'bg-gold-gradient text-navy-900' : 'bg-navy-900 text-gold-400'
-            }`}
-          >
-            <Icon size={26} strokeWidth={1.8} aria-hidden="true" />
-          </div>
-
-          <div className="flex-1">
-            <h3 className="font-display text-lg font-bold text-navy-900">{school.title}</h3>
-            <p className="mt-2 font-body text-sm leading-relaxed text-navy-600">{school.description}</p>
-          </div>
-
-          <motion.div
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: 0.3, ease: easeOutExpo }}
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-navy-50 text-navy-900"
-          >
-            <ChevronDown size={18} />
-          </motion.div>
-        </button>
-
-        <AnimatePresence initial={false}>
-          {isOpen && (
-            <motion.div
-              id={`school-detail-${school.id}`}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.35, ease: easeOutExpo }}
-              className="overflow-hidden"
-            >
-              <div className="border-t border-navy-100 px-7 pb-7 pt-6">
-                <p className="mb-3 font-body text-xs font-semibold uppercase tracking-wider text-gold-600">
-                  Tracks
-                </p>
-                <ul className="space-y-2">
-                  {school.tracks.map((track, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 font-body text-sm leading-relaxed text-navy-700"
-                    >
-                      <CheckCircle2
-                        size={16}
-                        className="mt-0.5 flex-shrink-0 text-gold-600"
-                        aria-hidden="true"
-                      />
-                      {track}
-                    </li>
-                  ))}
-                </ul>
-                <p className="mt-5 mb-2 font-body text-xs font-semibold uppercase tracking-wider text-gold-600">
-                  Technologies
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {school.technologies.map((tech, i) => (
-                    <span
-                      key={i}
-                      className="rounded-full bg-navy-50 px-3 py-1 font-mono text-xs font-medium text-navy-700"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+    <motion.article
+      variants={fadeUpItem}
+      className="group flex h-full flex-col rounded-2xl border border-navy-100 bg-white p-6 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:border-gold-300 hover:shadow-premium-lg sm:p-7"
+    >
+      {/* Top row: icon + number */}
+      <div className="flex items-start justify-between">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-navy-900 text-gold-400 transition-colors duration-300 group-hover:bg-gold-gradient group-hover:text-navy-900">
+          <Icon size={22} strokeWidth={1.8} />
+        </div>
+        <span className="font-display text-sm font-bold tracking-wide text-navy-200">
+          {String(index + 1).padStart(2, '0')}
+        </span>
       </div>
-    </motion.div>
+
+      {/* Title */}
+      <h3 className="mt-5 font-display text-lg font-bold leading-snug text-navy-900">
+        {track.title}
+      </h3>
+
+      {/* Description */}
+      <p className="mt-2 flex-1 font-body text-sm leading-6 text-navy-600">
+        {track.description}
+      </p>
+
+      {/* Popular courses */}
+      {sampleCourses.length > 0 && (
+        <div className="mt-5 border-t border-navy-100 pt-5">
+          <p className="mb-3 font-body text-[11px] font-bold uppercase tracking-wider text-navy-400">
+            Popular courses
+          </p>
+          <ul className="space-y-2">
+            {sampleCourses.map((c) => (
+              <li key={c.code}>
+                <Link
+                  to={`/courses/${c.code}`}
+                  className="flex items-center gap-2 font-body text-sm text-navy-700 transition-colors hover:text-gold-700"
+                >
+                  <span className="shrink-0 font-mono text-[11px] font-bold text-gold-600">
+                    {c.code}
+                  </span>
+                  <span className="truncate">{c.name}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Footer: count + explore */}
+      <div className="mt-5 flex items-center justify-between border-t border-navy-100 pt-4">
+        <span className="font-body text-sm font-bold text-navy-900">
+          {trackCourses.length} {trackCourses.length === 1 ? 'course' : 'courses'}
+        </span>
+        <Link
+          to={`/courses?track=${track.id}`}
+          className="inline-flex items-center gap-1 font-body text-sm font-bold text-gold-700 transition-all duration-300 group-hover:gap-2"
+        >
+          Explore
+          <ArrowRight size={14} aria-hidden="true" />
+        </Link>
+      </div>
+    </motion.article>
   );
 }
 
 export default function LabTracks() {
-  const [openId, setOpenId] = useState('ai-intelligent-systems');
-
   return (
-    <section className="bg-cream py-20 md:py-28">
+    <section className="bg-cream py-16 sm:py-20 lg:py-24">
       <div className="container-premium">
+        <div className="mb-12 sm:mb-14 lg:mb-16">
+          <SectionHeading
+            eyebrow="Lab Tracks"
+            title="Build Your Specialisation"
+            subtitle="Seven tracks. Each one a route from fundamentals to production-grade skills — software, data, AI, cloud, security, engineering and creative technology."
+          />
+        </div>
+
         <motion.div
           variants={container}
           initial="hidden"
           whileInView="visible"
           viewport={inViewOnce}
+          className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:gap-7"
         >
-          <SectionHeading
-            eyebrow="Pathways"
-            title="Seven Innovation Pathways"
-            subtitle="Each pathway focuses on a different domain — pick the one that matches what you want to build."
-          />
+          {LAB_SCHOOLS.map((track, i) => (
+            <TrackCard key={track.id} track={track} index={i} />
+          ))}
+        </motion.div>
 
-          <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {LAB_SCHOOLS.map((school) => (
-              <SchoolCard
-                key={school.id}
-                school={school}
-                isOpen={openId === school.id}
-                onToggle={() => setOpenId(openId === school.id ? null : school.id)}
-              />
-            ))}
-          </div>
+        {/* Footer CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={inViewOnce}
+          transition={{ duration: 0.5, delay: 0.35 }}
+          className="mt-12 text-center"
+        >
+          <Link
+            to="/courses"
+            className="btn-gold inline-flex items-center gap-2 px-7 py-3"
+          >
+            Browse all Labs courses
+            <ArrowRight size={17} aria-hidden="true" />
+          </Link>
         </motion.div>
       </div>
     </section>

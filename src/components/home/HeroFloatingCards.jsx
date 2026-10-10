@@ -9,27 +9,41 @@ const ICONS = {
   award: Award,
 };
 
+/**
+ * Floating feature cards — anchored to the RIGHT half of the hero only.
+ * The hero text occupies the left column, so every card lives at
+ * 8–32% from the right edge to avoid overlap.
+ */
+const POSITIONS = [
+  { right: '8%', top: '22%' },
+  { right: '30%', top: '38%' },
+  { right: '8%', top: '54%' },
+  { right: '30%', top: '70%' },
+];
+
 export default function HeroFloatingCards() {
   return (
-    <div className="absolute inset-0 z-20 hidden lg:block">
+    <div className="pointer-events-none absolute inset-0 z-20 hidden lg:block">
       {HERO_FLOATING_CARDS.map((card, i) => {
         const Icon = ICONS[card.icon] ?? Laptop;
-        const positions = [
-          'left-[6%] top-[22%]',
-          'right-[6%] top-[18%]',
-          'left-[8%] bottom-[18%]',
-          'right-[8%] bottom-[22%]',
-        ];
+        const pos = POSITIONS[i % POSITIONS.length];
+
         return (
           <motion.div
             key={card.id}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.8 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className={`absolute ${positions[i]} flex items-center gap-3 rounded-xl border border-white/20 bg-white/90 px-4 py-3 shadow-glass backdrop-blur-md`}
+            initial={{ opacity: 0, x: 20, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{
+              duration: 0.5,
+              delay: 0.8 + i * 0.15,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            style={{ right: pos.right, top: pos.top }}
+            whileHover={{ scale: 1.04, y: -3 }}
+            className="pointer-events-auto absolute flex items-center gap-3 rounded-2xl border border-white/25 bg-white/95 px-4 py-3 shadow-glass backdrop-blur-md"
           >
             <div
-              className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+              className={`flex h-10 w-10 items-center justify-center rounded-xl ${
                 card.color === 'gold'
                   ? 'bg-gold-gradient text-navy-900'
                   : 'bg-navy-900 text-gold-400'

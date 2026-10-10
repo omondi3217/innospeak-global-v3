@@ -1,331 +1,632 @@
-import { useEffect, useState, useCallback } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
-  TrendingUp, BookOpen, CheckCircle2, FileText, Award, Clock,
-  ArrowLeft, ChevronRight, BarChart3, Target, AlertCircle,
-  RotateCcw, FileCheck2, ListChecks,
+  Award, BookOpen, Calendar, ChevronLeft, CircleCheck as CheckCircle2,
+  Clock, Play, RefreshCw, Sparkles, Target, TrendingUp,
 } from 'lucide-react';
 import Seo from '../../components/ui/Seo.jsx';
-import StatCard from '../../components/portal/StatCard.jsx';
 import SectionCard from '../../components/portal/SectionCard.jsx';
-import StatusBadge from '../../components/portal/StatusBadge.jsx';
 import { LoadingState, ErrorState, EmptyState } from '../../components/portal/PortalStates.jsx';
 import {
   getStudentAcademicSummary,
   getStudentCoursePerformance,
   getStudentRecentActivity,
-  getStudentCourseDetail,
   getStudentAssessmentPerformance,
+  getStudentCourseDetail,
 } from '../../lib/supabase/lms';
 
-const ACTIVITY_ICONS = {
-  lesson_completed: CheckCircle2,
-  quiz_submitted: FileCheck2,
-  assignment_submitted: FileText,
-  assignment_graded: Award,
-  resubmission_requested: RotateCcw,
-};
+/* ──────────────────────────────────────────────────────────────
+   Small helpers
+   ────────────────────────────────────────────────────────────── */
 
-const ACTIVITY_LABELS = {
-  lesson_completed: 'Lesson Completed',
-  quiz_submitted: 'Quiz Submitted',
-  assignment_submitted: 'Assignment Submitted',
-  assignment_graded: 'Assignment Graded',
-  resubmission_requested: 'Resubmission Requested',
-};
+function formatDate(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric',
+    });
+  } catch { return ''; }
+}
 
-function ProgressBar({ value, className }) {
+function relativeTime(iso) {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return formatDate(iso);
+}
+
+function ProgressBar({ percent, tone = 'gold', size = 'md' }) {
+  const tones = {
+    gold:    'bg-gold-500',
+    emerald: 'bg-emerald-500',
+    navy:    'bg-navy-800',
+  };
+  const heights = { sm: 'h-1.5', md: 'h-2', lg: 'h-2.5' };
   return (
-    <div className={`h-2 w-full overflow-hidden rounded-full bg-navy-100 ${className || ''}`}>
+    <div className={`w-full rounded-full bg-navy-100 ${heights[size]}`}>
       <div
-        className="h-full rounded-full bg-gold-500 transition-all duration-500"
-        style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
+        className={`rounded-full transition-all duration-500 ${tones[tone]} ${heights[size]}`}
+        style={{ width: `${Math.min(100, Math.max(0, percent || 0))}%` }}
       />
     </div>
   );
 }
 
-function OverallSummary({ summary }) {
+function StatCard({ icon: Icon, label, value, tone = 'gold' }) {
+  const tones = {
+    gold:    'bg-gold-500/10 text-gold-700',
+    emerald: 'bg-emerald-500/10 text-emerald-700',
+    navy:    'bg-navy-100 text-navy-700',
+    amber:   'bg-amber-100 text-amber-700',
+  };
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <StatCard icon={BookOpen} label="Courses Enrolled" value={summary?.courses_enrolled ?? 0} />
-      <StatCard icon={TrendingUp} label="In Progress" value={summary?.courses_in_progress ?? 0} />
-      <StatCard icon={CheckCircle2} label="Completed" value={summary?.courses_completed ?? 0} />
-      <StatCard icon={BarChart3} label="Overall Progress" value={`${summary?.overall_progress_percent ?? 0}%`} />
-      <StatCard icon={CheckCircle2} label="Lessons Completed" value={summary?.lessons_completed ?? 0} hint={`of ${summary?.lessons_total ?? 0}`} />
-      <StatCard icon={FileCheck2} label="Quizzes Completed" value={summary?.quizzes_completed ?? 0} />
-      <StatCard icon={FileText} label="Assignments Submitted" value={summary?.assignments_submitted ?? 0} />
-      <StatCard icon={Award} label="Assignments Graded" value={summary?.assignments_graded ?? 0} />
+    <div className="flex items-center gap-3 rounded-2xl border border-navy-100 bg-white px-4 py-3 shadow-sm">
+      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tones[tone]}`}>
+        <Icon size={18} strokeWidth={1.8} />
+      </span>
+      <div className="min-w-0">
+        <p className="font-display text-xl font-bold leading-none text-navy-900">
+          {value}
+        </p>
+        <p className="mt-0.5 truncate font-body text-xs text-navy-500">{label}</p>
+      </div>
     </div>
   );
 }
 
-function CoursePerformanceRow({ course }) {
+/* ──────────────────────────────────────────────────────────────
+   Course row (list + detail view)
+   ────────────────────────────────────────────────────────────── */
+
+function CourseProgressCard({ course, onOpen }) {
+  const percent = course.progress_percent ?? course.percent ?? 0;
+  const completedLessons = course.completed_lessons ?? 0;
+  const totalLessons = course.total_lessons ?? 0;
+  const isComplete = percent >= 100;
+  const notStarted = percent === 0;
+  const title = course.course_title || course.title || 'Course';
+
   return (
-    <Link
-      to={`/portal/progress/${course.course_id}`}
-      className="block rounded-xl border border-navy-100 bg-white p-4 transition-all hover:border-gold-300 hover:shadow-premium"
+    <button
+      type="button"
+      onClick={onOpen}
+      className="w-full rounded-2xl border border-navy-100 bg-white p-5 text-left shadow-sm transition-all hover:border-gold-300/60 hover:shadow-premium"
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <p className="font-body text-sm font-semibold text-navy-900">{course.course_title}</p>
-          <p className="mt-0.5 font-body text-xs text-navy-400">
-            {course.lessons_completed}/{course.lessons_total} lessons
-            {' · '}
-            {course.completion_status === 'completed' ? 'Completed' : course.completion_status === 'in_progress' ? 'In Progress' : 'Not Started'}
-            {course.last_activity_at && ` · Last: ${new Date(course.last_activity_at).toLocaleDateString()}`}
+          <p className="truncate font-display text-base font-bold leading-snug text-navy-900">
+            {title}
           </p>
+          {course.course_code && (
+            <p className="mt-1 font-mono text-xs font-bold text-gold-700">
+              {course.course_code}
+            </p>
+          )}
         </div>
-        <ChevronRight size={16} className="mt-1 shrink-0 text-navy-300" />
+        <span
+          className={`shrink-0 rounded-full px-2.5 py-1 font-body text-[10px] font-bold uppercase tracking-wider ${
+            isComplete
+              ? 'bg-emerald-50 text-emerald-700'
+              : notStarted
+                ? 'bg-navy-50 text-navy-500'
+                : 'bg-gold-500/10 text-gold-700'
+          }`}
+        >
+          {isComplete ? 'Completed' : notStarted ? 'Not started' : 'In progress'}
+        </span>
       </div>
-      <div className="mt-3 flex items-center gap-3">
-        <ProgressBar value={Number(course.progress_percent) || 0} className="flex-1" />
-        <span className="font-body text-xs font-semibold text-navy-700">{course.progress_percent}%</span>
-      </div>
-      <div className="mt-3 flex flex-wrap gap-3 font-body text-xs text-navy-500">
-        {course.quiz_average > 0 && <span>Quiz avg: {course.quiz_average}%</span>}
-        {course.assignment_average > 0 && <span>Assignment avg: {course.assignment_average}%</span>}
-        {course.performance_percent > 0 && <span className="font-semibold text-gold-700">Overall: {course.performance_percent}%</span>}
-      </div>
-    </Link>
-  );
-}
 
-function AssessmentRow({ assessment }) {
-  const isQuiz = assessment.assessment_type === 'quiz';
-  const Icon = isQuiz ? FileCheck2 : FileText;
-  const scoreDisplay = assessment.score != null
-    ? isQuiz
-      ? `${assessment.score}%`
-      : `${assessment.score}/${assessment.max_score}`
-    : '—';
+      <div className="mt-4 flex items-center gap-3">
+        <ProgressBar percent={percent} tone={isComplete ? 'emerald' : 'gold'} />
+        <span className="shrink-0 font-body text-sm font-bold text-navy-800">
+          {Math.round(percent)}%
+        </span>
+      </div>
 
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-navy-100 px-4 py-3">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gold-500/10 text-gold-700">
-        <Icon size={16} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-body text-sm font-semibold text-navy-800">{assessment.assessment_title}</p>
-        <p className="font-body text-xs text-navy-400">
-          {assessment.course_title} · {isQuiz ? 'Quiz' : 'Assignment'}
-          {isQuiz && assessment.attempts > 0 && ` · ${assessment.attempts} attempt(s)`}
-        </p>
-        {assessment.feedback && (
-          <p className="mt-1 font-body text-xs text-navy-500 italic">"{assessment.feedback}"</p>
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-body text-xs text-navy-500">
+        {totalLessons > 0 && (
+          <span>
+            {completedLessons} / {totalLessons} lessons
+          </span>
+        )}
+        {course.avg_quiz_score_percent != null && (
+          <span>Avg quiz: {Math.round(course.avg_quiz_score_percent)}%</span>
+        )}
+        {course.last_activity && (
+          <span className="inline-flex items-center gap-1">
+            <Clock size={11} /> {relativeTime(course.last_activity)}
+          </span>
         )}
       </div>
-      <div className="text-right">
-        <p className="font-body text-sm font-semibold text-navy-700">{scoreDisplay}</p>
-        <StatusBadge
-          status={
-            assessment.grading_status === 'graded' ? 'graded'
-            : assessment.grading_status === 'submitted' ? 'submitted'
-            : assessment.grading_status === 'resubmission_required' ? 'resubmission_required'
-            : assessment.grading_status === 'in_progress' ? 'in_progress'
-            : 'not_started'
-          }
-        />
-      </div>
-    </div>
+    </button>
   );
 }
 
-function ActivityRow({ activity }) {
-  const Icon = ACTIVITY_ICONS[activity.activity_type] || Clock;
+/* ──────────────────────────────────────────────────────────────
+   Recent activity feed
+   ────────────────────────────────────────────────────────────── */
+
+const ACTIVITY_ICONS = {
+  lesson_completed: CheckCircle2,
+  quiz_passed:      Award,
+  quiz_attempted:   Award,
+  enrolled:         BookOpen,
+  certificate:      Award,
+};
+
+function ActivityRow({ item }) {
+  const Icon = ACTIVITY_ICONS[item.activity_type] || TrendingUp;
+  const label =
+    item.activity_type === 'lesson_completed' ? 'Completed lesson'
+    : item.activity_type === 'quiz_passed'    ? 'Passed quiz'
+    : item.activity_type === 'quiz_attempted' ? 'Attempted quiz'
+    : item.activity_type === 'enrolled'       ? 'Enrolled'
+    : item.activity_type === 'certificate'    ? 'Certificate earned'
+    : 'Activity';
+
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-navy-50/60 px-4 py-3">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gold-500/10 text-gold-700">
-        <Icon size={14} />
+    <div className="flex items-start gap-3 rounded-xl border border-navy-100 bg-white px-4 py-3">
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gold-500/10 text-gold-700">
+        <Icon size={15} strokeWidth={1.8} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="font-body text-sm text-navy-800">
-          <span className="font-semibold">{ACTIVITY_LABELS[activity.activity_type] || activity.activity_type}</span>
-          {' — '}{activity.description}
+        <p className="font-body text-sm font-semibold text-navy-900">{label}</p>
+        <p className="mt-0.5 truncate font-body text-xs text-navy-500">
+          {item.course_title || item.title || '—'}
+          {item.lesson_title ? ` · ${item.lesson_title}` : ''}
         </p>
-        <p className="font-body text-xs text-navy-400">{activity.course_title}</p>
       </div>
-      <span className="shrink-0 font-body text-xs text-navy-400">
-        {new Date(activity.created_at).toLocaleDateString()}
+      <span className="shrink-0 font-body text-[11px] text-navy-400">
+        {relativeTime(item.created_at || item.occurred_at)}
       </span>
     </div>
   );
 }
 
-function CourseDetail({ courseId }) {
-  const [state, setState] = useState({ loading: true, error: null, detail: null });
+/* ──────────────────────────────────────────────────────────────
+   Assessment performance list
+   ────────────────────────────────────────────────────────────── */
 
-  const load = useCallback(() => {
-    getStudentCourseDetail(courseId)
-      .then((detail) => setState({ loading: false, error: null, detail }))
-      .catch((err) => setState({ loading: false, error: err.message || 'Could not load course detail.', detail: null }));
-  }, [courseId]);
-
-  useEffect(() => { load(); }, [load]);
-
-  if (state.loading) return <LoadingState />;
-  if (state.error) return <ErrorState message={state.error} />;
-  if (!state.detail) return <EmptyState icon={BookOpen} title="Course not found" />;
-
-  const d = state.detail;
-
+function AssessmentRow({ item }) {
+  const scorePercent = item.score_percent ?? item.percent ?? 0;
+  const passed = item.passed ?? scorePercent >= (item.passing_score_percent || 70);
   return (
-    <>
-      <Link to="/portal/progress" className="inline-flex items-center gap-2 font-body text-sm font-semibold text-navy-600 hover:text-gold-600">
-        <ArrowLeft size={16} /> Back to My Progress
-      </Link>
-
-      <div className="mt-4">
-        <h1 className="font-display text-2xl font-bold text-navy-900">{d.course_title}</h1>
-        <div className="mt-3 flex items-center gap-4">
-          <ProgressBar value={Number(d.overall_percent) || 0} className="flex-1 max-w-xs" />
-          <span className="font-body text-sm font-semibold text-navy-700">{d.overall_percent}%</span>
+    <div className="rounded-xl border border-navy-100 bg-white p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-body text-sm font-semibold text-navy-900">
+            {item.quiz_title || item.title || 'Quiz'}
+          </p>
+          {item.course_title && (
+            <p className="mt-0.5 truncate font-body text-xs text-navy-500">
+              {item.course_title}
+            </p>
+          )}
         </div>
-        <div className="mt-2 flex flex-wrap gap-4 font-body text-xs text-navy-500">
-          <span>{d.lessons_completed}/{d.lessons_total} lessons completed</span>
-          <span>{d.remaining_lessons} remaining</span>
-          {d.quiz_average > 0 && <span>Quiz avg: {d.quiz_average}%</span>}
-          {d.assignment_average > 0 && <span>Assignment avg: {d.assignment_average}%</span>}
-        </div>
+        <span
+          className={`shrink-0 rounded-full px-2.5 py-1 font-body text-[10px] font-bold uppercase tracking-wider ${
+            passed ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+          }`}
+        >
+          {passed ? 'Passed' : 'Not passed'}
+        </span>
       </div>
-
-      <Link
-        to={`/learn/courses/${courseId}`}
-        className="btn-gold mt-4 inline-flex items-center gap-2 text-sm"
-      >
-        <BookOpen size={15} /> Continue Learning
-      </Link>
-
-      <div className="mt-6 space-y-4">
-        {(d.modules || []).map((mod, idx) => (
-          <SectionCard
-            key={mod.module_id}
-            title={`Module ${idx + 1}: ${mod.module_title}`}
-            description={`${mod.lessons_completed}/${mod.lessons_total} lessons · ${mod.progress_percent}%`}
-          >
-            <div className="space-y-2">
-              {(mod.lessons || []).map((lesson) => (
-                <div key={lesson.lesson_id} className="flex items-center gap-3 rounded-lg bg-navy-50/50 px-3 py-2.5">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
-                    style={{ background: lesson.status === 'completed' ? '#059669' : lesson.status === 'in_progress' ? '#d97706' : '#94a3b8' }}>
-                    {lesson.status === 'completed' ? <CheckCircle2 size={14} /> : <Clock size={14} />}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-body text-sm font-semibold text-navy-800">{lesson.lesson_title}</p>
-                    <p className="font-body text-xs text-navy-400 capitalize">{lesson.status.replace(/_/g, ' ')}</p>
-                  </div>
-                  {lesson.quiz_score != null && (
-                    <span className="rounded-lg bg-emerald-50 px-2 py-1 font-body text-xs font-semibold text-emerald-700">
-                      Quiz: {lesson.quiz_score}%
-                    </span>
-                  )}
-                  {lesson.assignment_score && (
-                    <span className="rounded-lg bg-gold-50 px-2 py-1 font-body text-xs font-semibold text-gold-700">
-                      {lesson.assignment_score.score != null
-                        ? `Asg: ${lesson.assignment_score.score}/${lesson.assignment_score.max_score}`
-                        : lesson.assignment_score.status}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </SectionCard>
-        ))}
+      <div className="mt-3 flex items-center gap-3">
+        <ProgressBar percent={scorePercent} tone={passed ? 'emerald' : 'gold'} size="sm" />
+        <span className="shrink-0 font-body text-xs font-bold text-navy-800">
+          {Math.round(scorePercent)}%
+        </span>
       </div>
-    </>
+    </div>
   );
 }
+
+/* ──────────────────────────────────────────────────────────────
+   Single-course detail view (when :courseId param is set)
+   ────────────────────────────────────────────────────────────── */
+
+function CourseDetailView({ courseId }) {
+  const navigate = useNavigate();
+  const [state, setState] = useState({ loading: true, error: false, detail: null });
+
+  useEffect(() => {
+    let cancelled = false;
+    setState({ loading: true, error: false, detail: null });
+    getStudentCourseDetail(courseId)
+      .then((detail) => {
+        if (!cancelled) setState({ loading: false, error: false, detail });
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('[MyProgress] course detail failed:', err);
+        if (!cancelled) setState({ loading: false, error: true, detail: null });
+      });
+    return () => { cancelled = true; };
+  }, [courseId]);
+
+  if (state.loading) {
+    return <SectionCard><LoadingState /></SectionCard>;
+  }
+
+  if (state.error || !state.detail) {
+    return (
+      <SectionCard>
+        <EmptyState
+          icon={BookOpen}
+          title="Could not load this course"
+          message="The course detail isn't available right now. Try again in a moment."
+        />
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={() => navigate('/portal/progress')}
+            className="btn-outline text-sm"
+          >
+            Back to all progress
+          </button>
+        </div>
+      </SectionCard>
+    );
+  }
+
+  const d = state.detail;
+  const percent = d.progress_percent ?? d.percent ?? 0;
+
+  return (
+    <div className="space-y-5">
+      <button
+        type="button"
+        onClick={() => navigate('/portal/progress')}
+        className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-navy-500 transition-colors hover:text-navy-900"
+      >
+        <ChevronLeft size={15} /> All courses
+      </button>
+
+      <SectionCard>
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="font-body text-xs font-semibold uppercase tracking-wider text-gold-600">
+              Course progress
+            </p>
+            <h2 className="mt-1 font-display text-2xl font-bold leading-tight text-navy-900">
+              {d.course_title || d.title || 'Course'}
+            </h2>
+            {d.course_code && (
+              <p className="mt-1 font-mono text-xs font-bold text-gold-700">
+                {d.course_code}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 flex items-center gap-4">
+          <ProgressBar percent={percent} />
+          <span className="shrink-0 font-display text-2xl font-bold text-navy-900">
+            {Math.round(percent)}%
+          </span>
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard
+            icon={BookOpen}
+            label="Lessons"
+            value={`${d.completed_lessons ?? 0} / ${d.total_lessons ?? 0}`}
+            tone="navy"
+          />
+          <StatCard
+            icon={Award}
+            label="Avg quiz"
+            value={`${Math.round(d.avg_quiz_score_percent ?? 0)}%`}
+            tone="gold"
+          />
+          <StatCard
+            icon={Calendar}
+            label="Enrolled"
+            value={formatDate(d.enrolled_at)}
+            tone="navy"
+          />
+          <StatCard
+            icon={Clock}
+            label="Last active"
+            value={relativeTime(d.last_activity) || '—'}
+            tone="emerald"
+          />
+        </div>
+      </SectionCard>
+
+      {Array.isArray(d.modules) && d.modules.length > 0 && (
+        <SectionCard title="Module breakdown">
+          <div className="space-y-4">
+            {d.modules.map((m, i) => {
+              const moduleLessons = m.lessons || [];
+              const moduleCompleted = moduleLessons.filter((l) => l.status === 'completed').length;
+              const modulePercent = moduleLessons.length
+                ? (moduleCompleted / moduleLessons.length) * 100
+                : 0;
+              return (
+                <div key={m.id || i} className="rounded-xl border border-navy-100 bg-white p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-body text-sm font-bold text-navy-900">
+                      {m.title || `Module ${i + 1}`}
+                    </p>
+                    <span className="font-body text-xs font-semibold text-navy-500">
+                      {moduleCompleted}/{moduleLessons.length}
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <ProgressBar percent={modulePercent} size="sm" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </SectionCard>
+      )}
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Main page
+   ────────────────────────────────────────────────────────────── */
 
 export default function MyProgress() {
   const { courseId } = useParams();
-  const [summary, setSummary] = useState(null);
-  const [courses, setCourses] = useState([]);
-  const [assessments, setAssessments] = useState([]);
-  const [activity, setActivity] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  const [state, setState] = useState({
+    loading: true,
+    error: false,
+    summary: null,
+    courses: [],
+    activity: [],
+    assessments: [],
+  });
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    if (courseId) return;
+    if (courseId) return undefined; // detail view loads its own data
+    let cancelled = false;
+    setState((s) => ({ ...s, loading: true, error: false }));
+
     Promise.all([
-      getStudentAcademicSummary(),
-      getStudentCoursePerformance(),
-      getStudentAssessmentPerformance(),
-      getStudentRecentActivity(15),
+      getStudentAcademicSummary().catch(() => null),
+      getStudentCoursePerformance().catch(() => []),
+      getStudentRecentActivity(12).catch(() => []),
+      getStudentAssessmentPerformance().catch(() => []),
     ])
-      .then(([s, c, a, act]) => {
-        setSummary(s);
-        setCourses(c);
-        setAssessments(a);
-        setActivity(act);
-        setLoading(false);
+      .then(([summary, courses, activity, assessments]) => {
+        if (cancelled) return;
+        setState({
+          loading: false,
+          error: false,
+          summary: summary || null,
+          courses: Array.isArray(courses) ? courses : [],
+          activity: Array.isArray(activity) ? activity : [],
+          assessments: Array.isArray(assessments) ? assessments : [],
+        });
       })
       .catch((err) => {
-        setError(err.message || 'Could not load your academic progress.');
-        setLoading(false);
+        // eslint-disable-next-line no-console
+        console.error('[MyProgress] load failed:', err);
+        if (!cancelled) setState((s) => ({ ...s, loading: false, error: true }));
       });
-  }, [courseId]);
 
-  if (courseId) return <CourseDetail courseId={courseId} />;
+    return () => { cancelled = true; };
+  }, [courseId, reloadKey]);
+
+  const totals = useMemo(() => {
+    const s = state.summary || {};
+    const enrolled = s.total_enrolled ?? state.courses.length;
+    const completed = s.total_completed ?? state.courses.filter(
+      (c) => (c.progress_percent ?? c.percent ?? 0) >= 100
+    ).length;
+    const avgProgress = s.avg_progress_percent ?? (
+      state.courses.length
+        ? state.courses.reduce((sum, c) => sum + (c.progress_percent ?? c.percent ?? 0), 0) / state.courses.length
+        : 0
+    );
+    const avgQuiz = s.avg_quiz_score_percent ?? (
+      state.assessments.length
+        ? state.assessments.reduce((sum, a) => sum + (a.score_percent ?? a.percent ?? 0), 0) / state.assessments.length
+        : 0
+    );
+    return {
+      enrolled,
+      completed,
+      avgProgress: Math.round(avgProgress),
+      avgQuiz: Math.round(avgQuiz),
+    };
+  }, [state.summary, state.courses, state.assessments]);
+
+  // Detail view — a single course
+  if (courseId) {
+    return (
+      <>
+        <Seo
+          title="Course Progress"
+          description="Your progress on a specific course."
+          path={`/portal/progress/${courseId}`}
+        />
+        <CourseDetailView courseId={courseId} />
+      </>
+    );
+  }
 
   return (
     <>
-      <Seo title="My Progress" description="Your academic progress and performance." path="/portal/progress" />
+      <Seo
+        title="My Progress"
+        description="Your learning progress across InnoSpeak Global courses."
+        path="/portal/progress"
+      />
 
-      <div>
-        <p className="font-body text-xs font-semibold uppercase tracking-wider text-gold-600">Student Portal</p>
-        <h1 className="mt-1 font-display text-2xl font-bold text-navy-900 sm:text-3xl">My Progress</h1>
-        <p className="mt-2 font-body text-sm text-navy-500">Your academic performance across all enrolled courses.</p>
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="font-body text-xs font-semibold uppercase tracking-wider text-gold-600">
+            Learning
+          </p>
+          <h1 className="mt-1 font-display text-2xl font-bold text-navy-900 sm:text-3xl">
+            My Progress
+          </h1>
+          <p className="mt-2 max-w-2xl font-body text-sm leading-6 text-navy-500">
+            Track how you&apos;re doing across every course you&apos;re enrolled in.
+          </p>
+        </div>
+        <Link
+          to="/learn"
+          className="btn-outline inline-flex shrink-0 items-center gap-2 text-sm"
+        >
+          <Play size={14} aria-hidden="true" />
+          Go to E-Learning
+        </Link>
       </div>
 
-      {loading && <div className="mt-8"><LoadingState /></div>}
-      {error && <div className="mt-8"><ErrorState message={error} /></div>}
+      {state.loading && (
+        <SectionCard className="mt-6">
+          <LoadingState />
+        </SectionCard>
+      )}
 
-      {!loading && !error && (
-        <>
-          {/* 1. Overall Learning Summary */}
-          <div className="mt-6">
-            <h2 className="font-display text-lg font-bold text-navy-900">Overall Learning Summary</h2>
-            <div className="mt-3">
-              <OverallSummary summary={summary} />
+      {state.error && !state.loading && (
+        <SectionCard className="mt-6">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-display text-base font-bold text-navy-900">
+                Unable to load your progress right now
+              </p>
+              <p className="mt-1 font-body text-sm text-navy-500">
+                Please try again shortly.
+              </p>
             </div>
+            <button
+              type="button"
+              onClick={() => setReloadKey((k) => k + 1)}
+              className="btn-outline inline-flex items-center gap-2 text-sm"
+            >
+              <RefreshCw size={14} /> Retry
+            </button>
+          </div>
+        </SectionCard>
+      )}
+
+      {!state.loading && !state.error && (
+        <>
+          {/* Summary */}
+          <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <StatCard
+              icon={BookOpen}
+              label="Enrolled courses"
+              value={totals.enrolled}
+              tone="navy"
+            />
+            <StatCard
+              icon={CheckCircle2}
+              label="Completed"
+              value={totals.completed}
+              tone="emerald"
+            />
+            <StatCard
+              icon={TrendingUp}
+              label="Avg progress"
+              value={`${totals.avgProgress}%`}
+              tone="gold"
+            />
+            <StatCard
+              icon={Award}
+              label="Avg quiz score"
+              value={`${totals.avgQuiz}%`}
+              tone="gold"
+            />
           </div>
 
-          {/* 2. Course Performance */}
-          <div className="mt-8">
-            <h2 className="font-display text-lg font-bold text-navy-900">Course Performance</h2>
-            {courses.length === 0 ? (
-              <div className="mt-3"><EmptyState icon={BookOpen} title="No courses enrolled" message="Enroll in a course to start tracking your progress." /></div>
+          {/* Courses grid */}
+          <SectionCard
+            title="Your courses"
+            description="Click a course to see the module breakdown."
+            className="mt-6"
+          >
+            {state.courses.length === 0 ? (
+              <EmptyState
+                icon={BookOpen}
+                title="No enrolled courses yet"
+                message="Once you enroll in a course, your progress will show up here."
+                action={
+                  <Link to="/learn/catalog" className="btn-gold text-sm">
+                    Browse Courses
+                  </Link>
+                }
+              />
             ) : (
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                {courses.map((c) => <CoursePerformanceRow key={c.course_id} course={c} />)}
+              <div className="grid gap-3 lg:grid-cols-2">
+                {state.courses.map((c) => (
+                  <CourseProgressCard
+                    key={c.course_id || c.id || c.course_title}
+                    course={c}
+                    onOpen={() => navigate(`/portal/progress/${c.course_id || c.id}`)}
+                  />
+                ))}
               </div>
             )}
-          </div>
+          </SectionCard>
 
-          {/* 3. Assessment Performance */}
-          <div className="mt-8">
-            <h2 className="font-display text-lg font-bold text-navy-900">Assessment Performance</h2>
-            {assessments.length === 0 ? (
-              <div className="mt-3"><EmptyState icon={ListChecks} title="No assessments yet" message="Quiz and assignment results will appear here." /></div>
-            ) : (
-              <div className="mt-3 space-y-2">
-                {assessments.map((a, i) => <AssessmentRow key={`${a.assessment_type}-${a.assessment_id}-${i}`} assessment={a} />)}
-              </div>
-            )}
-          </div>
+          {/* Two-column: activity + assessments */}
+          {(state.activity.length > 0 || state.assessments.length > 0) && (
+            <div className="mt-6 grid gap-5 lg:grid-cols-2">
+              {state.activity.length > 0 && (
+                <SectionCard title="Recent activity">
+                  <div className="space-y-2">
+                    {state.activity.slice(0, 8).map((item, i) => (
+                      <ActivityRow key={item.id || i} item={item} />
+                    ))}
+                  </div>
+                </SectionCard>
+              )}
 
-          {/* 4. Academic Activity */}
-          <div className="mt-8">
-            <h2 className="font-display text-lg font-bold text-navy-900">Recent Activity</h2>
-            {activity.length === 0 ? (
-              <div className="mt-3"><EmptyState icon={Clock} title="No recent activity" message="Your learning activity will appear here." /></div>
-            ) : (
-              <div className="mt-3 space-y-2">
-                {activity.map((act, i) => <ActivityRow key={i} activity={act} />)}
+              {state.assessments.length > 0 && (
+                <SectionCard title="Assessment performance">
+                  <div className="space-y-3">
+                    {state.assessments.slice(0, 6).map((item, i) => (
+                      <AssessmentRow key={item.id || i} item={item} />
+                    ))}
+                  </div>
+                </SectionCard>
+              )}
+            </div>
+          )}
+
+          {/* Achievements (if summary exposes them) */}
+          {state.summary?.certificates_count != null && state.summary.certificates_count > 0 && (
+            <div className="mt-6 rounded-2xl border border-gold-200 bg-gold-50/60 p-6">
+              <div className="flex items-start gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-gradient text-navy-900">
+                  <Award size={20} strokeWidth={1.8} />
+                </span>
+                <div className="flex-1">
+                  <p className="font-body text-sm font-bold text-navy-900">
+                    You&apos;ve earned {state.summary.certificates_count}{' '}
+                    {state.summary.certificates_count === 1 ? 'certificate' : 'certificates'}
+                  </p>
+                  <p className="mt-0.5 font-body text-xs text-navy-600">
+                    Verify, print, or share them anytime.
+                  </p>
+                </div>
+                <Link
+                  to="/learn/certificates"
+                  className="btn-gold inline-flex shrink-0 items-center gap-2 text-sm"
+                >
+                  View certificates
+                </Link>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </>
       )}
     </>

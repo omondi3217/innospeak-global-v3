@@ -5,7 +5,7 @@ import {
   ArrowLeft, ArrowRight, CheckCircle2, Circle, BookOpen, Target,
   Download, ExternalLink, Video, FileText, Headphones, Presentation,
   File, Link as LinkIcon, Play, Lock, ChevronDown, ChevronRight,
-  Menu, X, GraduationCap, Clock, ListChecks, AlertCircle, Sparkles,
+  Menu, X, GraduationCap, Clock, ListChecks, Sparkles, PanelRight,
 } from 'lucide-react';
 import Seo from '../../components/ui/Seo.jsx';
 import { LoadingState, ErrorState, EmptyState } from '../../components/portal/PortalStates.jsx';
@@ -15,6 +15,9 @@ import {
   getCourseProgress, getLessonProgress, getAllLessonProgress,
   markLessonStarted, markLessonComplete, checkCourseCompletion,
 } from '../../lib/supabase/lms';
+import { resolveLmsCourse } from '../../lib/data/lmsCourse';
+import CourseBadges from '../../components/learn/CourseBadges.jsx';
+import LessonCompass from '../../components/learn/LessonCompass.jsx';
 import QuizPlayer from '../../components/learn/QuizPlayer.jsx';
 import AssignmentPanel from '../../components/learn/AssignmentPanel.jsx';
 
@@ -27,6 +30,10 @@ const RESOURCE_ICONS = {
   link: LinkIcon,
   downloadable: Download,
 };
+
+/* ──────────────────────────────────────────────────────────────
+   Progress ring
+   ────────────────────────────────────────────────────────────── */
 
 function ProgressRing({ percent, size = 48, stroke = 4 }) {
   const radius = (size - stroke * 2) / 2;
@@ -54,6 +61,10 @@ function ProgressRing({ percent, size = 48, stroke = 4 }) {
     </svg>
   );
 }
+
+/* ──────────────────────────────────────────────────────────────
+   Sidebar module (course tree)
+   ────────────────────────────────────────────────────────────── */
 
 function SidebarModule({ module, lessons, progressMap, currentLessonId, onSelectLesson, defaultOpen }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -129,10 +140,14 @@ function SidebarModule({ module, lessons, progressMap, currentLessonId, onSelect
   );
 }
 
+/* ──────────────────────────────────────────────────────────────
+   Lesson content — polished
+   ────────────────────────────────────────────────────────────── */
+
 function LessonContent({ lesson, resources, isComplete, isStarted, onComplete, completing }) {
   return (
     <div className="space-y-6">
-      {/* Lesson header */}
+      {/* Header */}
       <div>
         <div className="flex items-center gap-2">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-500/10 text-gold-700">
@@ -144,7 +159,7 @@ function LessonContent({ lesson, resources, isComplete, isStarted, onComplete, c
           </div>
         </div>
         {lesson.description && (
-          <p className="mt-3 font-body text-sm text-navy-600">{lesson.description}</p>
+          <p className="mt-3 font-body text-sm leading-6 text-navy-600">{lesson.description}</p>
         )}
       </div>
 
@@ -165,7 +180,7 @@ function LessonContent({ lesson, resources, isComplete, isStarted, onComplete, c
         </div>
       )}
 
-      {/* Video content */}
+      {/* Video */}
       {lesson.content_type === 'video' && lesson.video_url && (
         <div className="overflow-hidden rounded-2xl border border-navy-100 shadow-premium">
           {lesson.video_url.includes('youtube.com') || lesson.video_url.includes('youtu.be') ? (
@@ -192,9 +207,12 @@ function LessonContent({ lesson, resources, isComplete, isStarted, onComplete, c
         </a>
       )}
 
-      {/* Rich text content */}
+      {/* Rich text */}
       {lesson.content && (
-        <div className="prose prose-sm max-w-none rounded-2xl border border-navy-100 bg-white p-6 font-body text-navy-800 shadow-sm sm:p-8" dangerouslySetInnerHTML={{ __html: lesson.content }} />
+        <div
+          className="prose prose-sm max-w-none rounded-2xl border border-navy-100 bg-white p-6 font-body text-navy-800 shadow-sm sm:p-8"
+          dangerouslySetInnerHTML={{ __html: lesson.content }}
+        />
       )}
 
       {/* Practical activity */}
@@ -203,7 +221,9 @@ function LessonContent({ lesson, resources, isComplete, isStarted, onComplete, c
           <p className="flex items-center gap-2 font-body text-sm font-bold text-navy-900">
             <ListChecks size={16} className="text-gold-600" /> Practical Activity
           </p>
-          <p className="mt-2 whitespace-pre-wrap font-body text-sm text-navy-700">{lesson.practical_activity}</p>
+          <p className="mt-2 whitespace-pre-wrap font-body text-sm leading-6 text-navy-700">
+            {lesson.practical_activity}
+          </p>
         </div>
       )}
 
@@ -265,37 +285,30 @@ function LessonContent({ lesson, resources, isComplete, isStarted, onComplete, c
   );
 }
 
+/* ──────────────────────────────────────────────────────────────
+   Main page
+   ────────────────────────────────────────────────────────────── */
+
 export default function LearningPlayer() {
   const { courseId, lessonId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [state, setState] = useState({
-    loading: true,
-    error: null,
-    course: null,
-    enrollment: null,
-    modules: [],
-    progressData: null,
-    progressMap: {},
-    flatLessons: [],
+    loading: true, error: null, course: null, enrollment: null,
+    modules: [], progressData: null, progressMap: {}, flatLessons: [],
   });
   const [lessonState, setLessonState] = useState({
-    loading: lessonId ? true : false,
-    error: null,
-    lesson: null,
-    resources: [],
-    progress: null,
+    loading: lessonId ? true : false, error: null, lesson: null, resources: [], progress: null,
   });
-  const [quizState, setQuizState] = useState({ loading: false, quiz: null });
   const [completing, setCompleting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [compassOpen, setCompassOpen] = useState(false); // mobile drawer
   const [completionResult, setCompletionResult] = useState(null);
   const [showCompletionBanner, setShowCompletionBanner] = useState(false);
 
-  // Load course structure + enrollment + progress
   const loadCourse = useCallback(async () => {
     try {
-      const [course, enrollment, modules, progressData] = await Promise.all([
+      const [rawCourse, enrollment, modules, progressData] = await Promise.all([
         getCourse(courseId),
         getMyEnrollment(courseId),
         listModulesWithLessons(courseId),
@@ -306,45 +319,25 @@ export default function LearningPlayer() {
         setState({
           loading: false,
           error: 'You are not enrolled in this course. Enroll first to access learning content.',
-          course: null,
-          enrollment: null,
-          modules: [],
-          progressData: null,
-          progressMap: {},
-          flatLessons: [],
+          course: null, enrollment: null, modules: [], progressData: null, progressMap: {}, flatLessons: [],
         });
         return;
       }
 
-      // Build flat lesson list and fetch all progress in one go
+      const course = resolveLmsCourse(rawCourse);
       const flatLessons = modules.flatMap((m) =>
         (m.lessons || []).map((l) => ({ ...l, module_id: m.id, module_title: m.title }))
       );
-
       const progressRows = await getAllLessonProgress(courseId).catch(() => []);
       const progressMap = {};
       progressRows.forEach((p) => { progressMap[p.lesson_id] = p; });
 
-      setState({
-        loading: false,
-        error: null,
-        course,
-        enrollment,
-        modules,
-        progressData,
-        progressMap,
-        flatLessons,
-      });
+      setState({ loading: false, error: null, course, enrollment, modules, progressData, progressMap, flatLessons });
     } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: err.message || 'Could not load this course.',
-      }));
+      setState((prev) => ({ ...prev, loading: false, error: err.message || 'Could not load this course.' }));
     }
   }, [courseId, user?.id]);
 
-  // Load individual lesson when lessonId changes
   const loadLesson = useCallback(async (lid) => {
     if (!lid) {
       setLessonState({ loading: false, error: null, lesson: null, resources: [], progress: null });
@@ -356,7 +349,6 @@ export default function LearningPlayer() {
         getLesson(lid),
         getLessonProgress(lid).catch(() => null),
       ]);
-      // Mark as started (but NOT complete — only explicit button does that)
       if (!progress || progress.status === 'not_started') {
         await markLessonStarted(lid).catch(() => {});
       }
@@ -370,13 +362,11 @@ export default function LearningPlayer() {
   useEffect(() => { loadCourse(); }, [loadCourse]);
   useEffect(() => { loadLesson(lessonId); }, [lessonId, loadLesson]);
 
-  // Navigate to a lesson
   function selectLesson(lid) {
     setSidebarOpen(false);
     navigate(`/learn/courses/${courseId}/lessons/${lid}`);
   }
 
-  // Mark lesson complete and refresh progress
   async function handleComplete() {
     if (!lessonId) return;
     setCompleting(true);
@@ -384,7 +374,6 @@ export default function LearningPlayer() {
       await markLessonComplete(lessonId);
       const progress = await getLessonProgress(lessonId);
       setLessonState((prev) => ({ ...prev, progress }));
-      // Update progress map + course progress
       setState((prev) => {
         const newMap = { ...prev.progressMap, [lessonId]: progress };
         const completedCount = prev.flatLessons.filter((l) => newMap[l.id]?.status === 'completed').length;
@@ -392,7 +381,6 @@ export default function LearningPlayer() {
         const percent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
         return { ...prev, progressMap: newMap, progressData: { ...prev.progressData, percent, completed_lessons: completedCount } };
       });
-      // Check if course completion requirements are now satisfied
       if (state.enrollment?.id) {
         try {
           const result = await checkCourseCompletion(state.enrollment.id);
@@ -400,16 +388,13 @@ export default function LearningPlayer() {
             setCompletionResult(result);
             setShowCompletionBanner(true);
           }
-        } catch {
-          // Completion check is best-effort; don't block the user
-        }
+        } catch { /* best effort */ }
       }
     } finally {
       setCompleting(false);
     }
   }
 
-  // Compute prev/next lesson
   const { prevLesson, nextLesson } = useMemo(() => {
     const flat = state.flatLessons;
     const idx = flat.findIndex((l) => l.id === lessonId);
@@ -420,17 +405,13 @@ export default function LearningPlayer() {
     };
   }, [state.flatLessons, lessonId]);
 
-  // Find the first lesson to resume from (last started, or first lesson)
   const resumeLessonId = useMemo(() => {
     const flat = state.flatLessons;
     if (flat.length === 0) return null;
-    // Find last in_progress lesson
     const inProgress = flat.find((l) => state.progressMap[l.id]?.status === 'in_progress');
     if (inProgress) return inProgress.id;
-    // Find first not-completed lesson
     const notCompleted = flat.find((l) => state.progressMap[l.id]?.status !== 'completed');
     if (notCompleted) return notCompleted.id;
-    // All done — return first
     return flat[0].id;
   }, [state.flatLessons, state.progressMap]);
 
@@ -442,11 +423,12 @@ export default function LearningPlayer() {
   const completedLessons = state.flatLessons.filter((l) => progressMap[l.id]?.status === 'completed').length;
   const percent = progressData?.percent ?? (totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0);
 
-  // No lesson selected — show course overview
+  /* ── Course overview (no lesson selected) ──────────────── */
   if (!lessonId) {
     return (
       <>
         <Seo title={course.title} description={course.description} path={`/learn/courses/${courseId}`} />
+
         <div className="flex items-center justify-between">
           <Link to="/learn" className="inline-flex items-center gap-1 font-body text-sm font-semibold text-navy-500 hover:text-navy-800">
             <ArrowLeft size={15} /> Back to My Learning
@@ -460,6 +442,12 @@ export default function LearningPlayer() {
               <p className="font-body text-xs font-semibold uppercase tracking-wider text-gold-400">Enrolled Course</p>
               <h1 className="mt-2 font-display text-2xl font-bold text-white sm:text-3xl">{course.title}</h1>
               {course.description && <p className="mt-2 font-body text-sm text-navy-200">{course.description}</p>}
+
+              {/* Badges */}
+              <div className="mt-4">
+                <CourseBadges course={course} size="sm" className="[&>span]:border-white/10 [&>span]:bg-white/10 [&>span]:text-white [&_a]:border-white/10 [&_a]:bg-white/10 [&_a]:text-white" />
+              </div>
+
               <div className="mt-4 flex flex-wrap items-center gap-4">
                 <span className="inline-flex items-center gap-1.5 font-body text-xs text-navy-200">
                   <BookOpen size={14} className="text-gold-400" /> {totalLessons} lessons
@@ -474,6 +462,7 @@ export default function LearningPlayer() {
                 )}
               </div>
             </div>
+
             <div className="flex flex-col items-center gap-3">
               <ProgressRing percent={percent} size={80} stroke={5} />
               <button
@@ -562,7 +551,7 @@ export default function LearningPlayer() {
     );
   }
 
-  // Lesson view mode
+  /* ── Lesson view ──────────────────────────────────────── */
   if (lessonState.loading) return <LoadingState />;
   if (lessonState.error) return <ErrorState message={lessonState.error} />;
 
@@ -574,18 +563,25 @@ export default function LearningPlayer() {
     <>
       <Seo title={lesson.title} description={lesson.description} path={`/learn/courses/${courseId}/lessons/${lessonId}`} />
 
-      <div className="flex flex-col gap-4 lg:flex-row">
-        {/* Sidebar — module list + lesson navigation */}
-        <aside className="lg:hidden">
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl border border-navy-100 bg-white px-4 py-2.5 font-body text-sm font-semibold text-navy-700 shadow-sm"
-          >
-            <Menu size={16} /> Course Contents
-          </button>
-        </aside>
+      {/* Mobile action bar */}
+      <div className="mb-4 flex items-center gap-2 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(true)}
+          className="inline-flex items-center gap-2 rounded-xl border border-navy-100 bg-white px-3.5 py-2 font-body text-sm font-semibold text-navy-700 shadow-sm"
+        >
+          <Menu size={15} /> Contents
+        </button>
+        <button
+          type="button"
+          onClick={() => setCompassOpen(true)}
+          className="inline-flex items-center gap-2 rounded-xl border border-navy-100 bg-white px-3.5 py-2 font-body text-sm font-semibold text-navy-700 shadow-sm"
+        >
+          <Sparkles size={15} /> Ask Compass
+        </button>
+      </div>
 
+      <div className="flex flex-col gap-4 lg:flex-row">
         {/* Desktop sidebar */}
         <aside className="sticky top-20 hidden h-[calc(100vh-6rem)] w-80 flex-shrink-0 overflow-y-auto rounded-2xl border border-navy-100 bg-white shadow-sm lg:block">
           <div className="border-b border-navy-100 px-4 py-4">
@@ -601,7 +597,7 @@ export default function LearningPlayer() {
             </div>
           </div>
           <div className="overflow-y-auto">
-            {modules.map((module, mIdx) => (
+            {modules.map((module) => (
               <SidebarModule
                 key={module.id}
                 module={module}
@@ -615,53 +611,6 @@ export default function LearningPlayer() {
           </div>
         </aside>
 
-        {/* Mobile sidebar drawer */}
-        <AnimatePresence>
-          {sidebarOpen && (
-            <div className="fixed inset-0 z-[60] flex lg:hidden">
-              <div className="absolute inset-0 bg-navy-950/50" onClick={() => setSidebarOpen(false)} />
-              <motion.aside
-                initial={{ x: -320 }}
-                animate={{ x: 0 }}
-                exit={{ x: -320 }}
-                transition={{ type: 'tween', duration: 0.2 }}
-                className="relative flex h-full w-80 max-w-[85%] flex-col bg-white shadow-premium-lg"
-              >
-                <div className="flex items-center justify-between border-b border-navy-100 px-4 py-4">
-                  <div>
-                    <Link to={`/learn/courses/${courseId}`} onClick={() => setSidebarOpen(false)} className="inline-flex items-center gap-1 font-body text-xs font-semibold text-navy-500 hover:text-navy-800">
-                      <ArrowLeft size={13} /> Course Overview
-                    </Link>
-                    <p className="mt-1 truncate font-display text-sm font-bold text-navy-900">{course.title}</p>
-                    <div className="mt-2 flex items-center gap-3">
-                      <div className="h-1.5 flex-1 rounded-full bg-navy-100">
-                        <div className="h-1.5 rounded-full bg-gold-500" style={{ width: `${percent}%` }} />
-                      </div>
-                      <span className="font-body text-xs font-semibold text-gold-700">{percent}%</span>
-                    </div>
-                  </div>
-                  <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-1.5 text-navy-400 hover:bg-navy-50">
-                    <X size={18} />
-                  </button>
-                </div>
-                <div className="flex-1 overflow-y-auto">
-                  {modules.map((module) => (
-                    <SidebarModule
-                      key={module.id}
-                      module={module}
-                      lessons={state.flatLessons}
-                      progressMap={progressMap}
-                      currentLessonId={lessonId}
-                      onSelectLesson={selectLesson}
-                      defaultOpen={state.flatLessons.some((l) => l.module_id === module.id && l.id === lessonId)}
-                    />
-                  ))}
-                </div>
-              </motion.aside>
-            </div>
-          )}
-        </AnimatePresence>
-
         {/* Main lesson area */}
         <main className="min-w-0 flex-1">
           <div className="mx-auto max-w-3xl">
@@ -674,13 +623,10 @@ export default function LearningPlayer() {
               completing={completing}
             />
 
-            {/* Quiz / Knowledge Check */}
             <QuizPlayer lessonId={lessonId} enrollmentId={state.enrollment?.id} />
-
-            {/* Assignment */}
             <AssignmentPanel lessonId={lessonId} enrollmentId={state.enrollment?.id} />
 
-            {/* Prev / Next navigation */}
+            {/* Prev / Next */}
             <div className="mt-8 flex items-center justify-between border-t border-navy-100 pt-6">
               {prevLesson ? (
                 <button
@@ -741,9 +687,7 @@ export default function LearningPlayer() {
                     <GraduationCap size={22} />
                   </span>
                   <div className="flex-1">
-                    <p className="font-display text-sm font-bold text-emerald-900">
-                      Course Completed!
-                    </p>
+                    <p className="font-display text-sm font-bold text-emerald-900">Course Completed!</p>
                     <p className="mt-1 font-body text-sm text-emerald-700">
                       Congratulations — you have met all completion requirements for this course.
                       {completionResult?.certificate_id
@@ -778,7 +722,94 @@ export default function LearningPlayer() {
             )}
           </div>
         </main>
+
+        {/* Desktop Compass rail */}
+        <aside className="sticky top-20 hidden h-[calc(100vh-6rem)] w-80 flex-shrink-0 xl:block">
+          <LessonCompass
+            lesson={lesson}
+            course={course}
+            courseCode={course.code}
+          />
+        </aside>
       </div>
+
+      {/* Mobile sidebar drawer */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-[60] flex lg:hidden">
+            <div className="absolute inset-0 bg-navy-950/50" onClick={() => setSidebarOpen(false)} />
+            <motion.aside
+              initial={{ x: -320 }}
+              animate={{ x: 0 }}
+              exit={{ x: -320 }}
+              transition={{ type: 'tween', duration: 0.2 }}
+              className="relative flex h-full w-80 max-w-[85%] flex-col bg-white shadow-premium-lg"
+            >
+              <div className="flex items-center justify-between border-b border-navy-100 px-4 py-4">
+                <div>
+                  <Link to={`/learn/courses/${courseId}`} onClick={() => setSidebarOpen(false)} className="inline-flex items-center gap-1 font-body text-xs font-semibold text-navy-500 hover:text-navy-800">
+                    <ArrowLeft size={13} /> Course Overview
+                  </Link>
+                  <p className="mt-1 truncate font-display text-sm font-bold text-navy-900">{course.title}</p>
+                </div>
+                <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-1.5 text-navy-400 hover:bg-navy-50">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {modules.map((module) => (
+                  <SidebarModule
+                    key={module.id}
+                    module={module}
+                    lessons={state.flatLessons}
+                    progressMap={progressMap}
+                    currentLessonId={lessonId}
+                    onSelectLesson={selectLesson}
+                    defaultOpen={state.flatLessons.some((l) => l.module_id === module.id && l.id === lessonId)}
+                  />
+                ))}
+              </div>
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Compass drawer */}
+      <AnimatePresence>
+        {compassOpen && (
+          <div className="fixed inset-0 z-[60] flex justify-end xl:hidden">
+            <div className="absolute inset-0 bg-navy-950/50" onClick={() => setCompassOpen(false)} />
+            <motion.aside
+              initial={{ x: 360 }}
+              animate={{ x: 0 }}
+              exit={{ x: 360 }}
+              transition={{ type: 'tween', duration: 0.22 }}
+              className="relative flex h-full w-96 max-w-[90%] flex-col bg-cream p-3 shadow-premium-lg"
+            >
+              <div className="flex items-center justify-between px-1 pb-2">
+                <p className="font-body text-xs font-bold uppercase tracking-wider text-navy-400">
+                  Lesson Compass
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setCompassOpen(false)}
+                  className="rounded-lg p-1.5 text-navy-500 hover:bg-navy-100"
+                  aria-label="Close Compass"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <LessonCompass
+                  lesson={lesson}
+                  course={course}
+                  courseCode={course.code}
+                />
+              </div>
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

@@ -2,7 +2,6 @@ import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar.jsx';
 import Footer from './Footer.jsx';
 import ScrollToTop from './ScrollToTop.jsx';
-import TutorWidget from '../tutor/TutorWidget.jsx';
 
 export default function AppLayout() {
   return (
@@ -12,7 +11,6 @@ export default function AppLayout() {
         <Outlet />
       </main>
       <Footer />
-      <TutorWidget />
     </div>
   );
 }

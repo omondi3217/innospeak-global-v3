@@ -1,111 +1,89 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, Users, HandHeart, HeartHandshake } from 'lucide-react';
-import { FOUNDATION_HERO_SLIDES, FOUNDATION_HERO_IMAGE_STATS, FOUNDATION_FEATURE_CARDS } from './foundationHeroData.js';
+import { motion } from 'framer-motion';
+import { ArrowRight, Heart } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { FOUNDATION_HERO } from './foundationData.js';
 
-const ICONS = {
-  graduation: GraduationCap,
-  users: Users,
-  'hand-heart': HandHeart,
-  'heart-handshake': HeartHandshake,
-};
-
-export default function FoundationHeroImage() {
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % FOUNDATION_HERO_SLIDES.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
-
+export default function FoundationHero() {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className="relative mx-auto w-full max-w-lg lg:max-w-none"
-    >
-      <div className="relative overflow-hidden rounded-3xl border border-navy-100 shadow-premium-lg">
-        <div className="relative aspect-[4/5] w-full sm:aspect-[4/3] lg:aspect-[5/6]">
-          <AnimatePresence mode="sync">
-            <motion.img
-              key={current}
-              src={FOUNDATION_HERO_SLIDES[current].image}
-              alt={FOUNDATION_HERO_SLIDES[current].title}
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          </AnimatePresence>
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-navy-900/40 via-transparent to-transparent" />
-
-        <div className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 gap-1.5">
-          {FOUNDATION_HERO_SLIDES.map((_, i) => (
-            <span
-              key={i}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === current ? 'w-5 bg-gold-400' : 'w-1.5 bg-white/50'
-              }`}
-            />
-          ))}
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="absolute bottom-4 left-4 right-4 flex items-center justify-around rounded-2xl border border-white/20 bg-white/15 px-4 py-3 shadow-glass backdrop-blur-md"
-        >
-          {FOUNDATION_HERO_IMAGE_STATS.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="font-display text-lg font-bold text-white sm:text-xl">
-                {stat.value}
-              </div>
-              <div className="font-body text-[10px] text-white/80 sm:text-xs">
-                {stat.label}
-              </div>
-            </div>
-          ))}
-        </motion.div>
-      </div>
-
-      {FOUNDATION_FEATURE_CARDS.map((card, i) => {
-        const Icon = ICONS[card.icon] ?? GraduationCap;
-        return (
-          <motion.div
-            key={card.label}
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.9 + i * 0.15, ease: [0.16, 1, 0.3, 1] }}
-            whileHover={{ y: -4 }}
-            className={`absolute ${card.pos} hidden items-center gap-2.5 rounded-xl border border-white/20 bg-white/90 px-3.5 py-2.5 shadow-glass backdrop-blur-md sm:flex`}
-          >
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                card.color === 'gold'
-                  ? 'bg-gold-gradient text-navy-900'
-                  : 'bg-navy-900 text-gold-400'
-              }`}
-            >
-              <Icon size={16} strokeWidth={1.8} />
-            </div>
-            <span className="font-body text-xs font-semibold text-navy-900">
-              {card.label}
-            </span>
-          </motion.div>
-        );
-      })}
-
+    <section className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-navy-900 pt-32 pb-20 sm:pt-36 sm:pb-24">
+      {/* Just two slow orbs — intentional, not busy */}
       <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-        className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full border-2 border-dashed border-gold-400/40"
+        animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
+        transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}
+        className="pointer-events-none absolute -top-24 right-1/4 h-96 w-96 rounded-full bg-emerald-500/15 blur-3xl"
+        aria-hidden="true"
       />
-    </motion.div>
+      <motion.div
+        animate={{ x: [0, -30, 0], y: [0, 20, 0] }}
+        transition={{ duration: 35, repeat: Infinity, ease: 'easeInOut' }}
+        className="pointer-events-none absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-gold-500/10 blur-3xl"
+        aria-hidden="true"
+      />
+
+      <div className="container-premium relative z-10">
+        <div className="mx-auto max-w-4xl text-center">
+          <motion.span
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-4 py-2 backdrop-blur-sm"
+          >
+            <Heart size={14} className="text-emerald-300" />
+            <span className="font-body text-[11px] font-bold uppercase tracking-wider text-emerald-200">
+              {FOUNDATION_HERO.eyebrow}
+            </span>
+          </motion.span>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.15 }}
+            className="mt-7 font-display text-4xl font-bold leading-[1.1] text-white sm:text-5xl sm:leading-[1.08] lg:text-6xl"
+          >
+            {FOUNDATION_HERO.title}
+            <span className="mt-2 block text-emerald-300">
+              {FOUNDATION_HERO.highlight}
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="mx-auto mt-6 max-w-2xl font-body text-base leading-[1.7] text-emerald-50/90 sm:text-lg"
+          >
+            {FOUNDATION_HERO.description}
+          </motion.p>
+
+          {/* Three CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.45 }}
+            className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-4"
+          >
+            <Link
+              to={FOUNDATION_HERO.secondaryCta.to}
+              className="btn-gold inline-flex w-full items-center justify-center gap-2 px-7 py-3.5 sm:w-auto"
+            >
+              {FOUNDATION_HERO.secondaryCta.label}
+              <ArrowRight size={16} />
+            </Link>
+            <a
+              href={FOUNDATION_HERO.primaryCta.to}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/5 px-7 py-3.5 font-body text-sm font-bold text-white backdrop-blur-sm transition-all duration-300 hover:border-emerald-400 hover:bg-white/10 hover:text-emerald-200 sm:w-auto"
+            >
+              {FOUNDATION_HERO.primaryCta.label}
+            </a>
+            <a
+              href={FOUNDATION_HERO.tertiaryCta.to}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/5 px-7 py-3.5 font-body text-sm font-bold text-white backdrop-blur-sm transition-all duration-300 hover:border-emerald-400 hover:bg-white/10 hover:text-emerald-200 sm:w-auto"
+            >
+              {FOUNDATION_HERO.tertiaryCta.label}
+            </a>
+          </motion.div>
+        </div>
+      </div>
+    </section>
   );
 }

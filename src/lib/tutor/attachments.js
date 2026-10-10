@@ -1,20 +1,43 @@
 /**
- * attachments — helpers for turning image/video files the user picks in
- * the AI Tutor composer into something we can both preview locally and
- * send to Gemini as inlineData.
+ * attachments — turn files the user picks in the Composer into
+ * payloads the Edge Function can send to Gemini.
  *
- * Kept deliberately simple: everything is base64-encoded client-side and
- * sent inline with the request (no upload step, no storage bucket). This
- * comfortably covers photos and short clips; very large videos should use
- * Gemini's File API instead, which is a larger feature than this covers.
+ * Categories:
+ *   image/*          → base64 + inlineData
+ *   video/*          → base64 + inlineData
+ *   application/pdf  → base64 + inlineData
+ *   text/*, code     → read as text, sent as message content
+ *
+ * Text/code files stay as text (cheap, Gemini reads them fine).
+ * Everything else is base64 inline (Gemini's native multimodal format).
  */
 
 export const MAX_FILE_SIZE_BYTES = 8 * 1024 * 1024; // 8MB per file
 export const MAX_ATTACHMENTS = 4;
-export const ACCEPTED_MIME_PREFIXES = ['image/', 'video/'];
+
+const IMAGE_VIDEO_PREFIXES = ['image/', 'video/'];
+const TEXT_PREFIXES = ['text/'];
+const PDF_MIME = 'application/pdf';
+
+// Common code file extensions we treat as text
+const CODE_EXTENSIONS = new Set([
+  'js', 'jsx', 'ts', 'tsx', 'py', 'rb', 'go', 'rs', 'java', 'kt', 'swift',
+  'c', 'cpp', 'h', 'hpp', 'cs', 'php', 'html', 'css', 'scss', 'sass',
+  'json', 'yaml', 'yml', 'toml', 'xml', 'md', 'markdown', 'csv', 'sql',
+  'sh', 'bash', 'zsh', 'env', 'ini', 'conf', 'log', 'txt',
+]);
 
 export function isAcceptedFile(file) {
-  return ACCEPTED_MIME_PREFIXES.some((prefix) => file.type.startsWith(prefix));
+  const type = file.type || '';
+  if (IMAGE_VIDEO_PREFIXES.some((p) => type.startsWith(p))) return true;
+  if (TEXT_PREFIXES.some((p) => type.startsWith(p))) return true;
+  if (type === PDF_MIME) return true;
+
+  // Fall back to extension for common code files with unknown mime
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  if (ext && CODE_EXTENSIONS.has(ext)) return true;
+
+  return false;
 }
 
 export function formatFileSize(bytes) {
@@ -29,37 +52,72 @@ function nextAttachmentId() {
   return `attachment-${attachmentIdCounter}`;
 }
 
-/**
- * Reads a File into an attachment object: a data URL for local preview,
- * plus the raw base64 payload (no "data:mime;base64," prefix) for sending
- * to the tutor-chat Edge Function.
- */
-export function fileToAttachment(file) {
-  return new Promise((resolve, reject) => {
-    if (!isAcceptedFile(file)) {
-      reject(new Error(`${file.name} isn't an image or video.`));
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      reject(new Error(`${file.name} is too large (max ${formatFileSize(MAX_FILE_SIZE_BYTES)}).`));
-      return;
-    }
+function classifyFile(file) {
+  const type = file.type || '';
+  if (type.startsWith('image/')) return 'image';
+  if (type.startsWith('video/')) return 'video';
+  if (type === PDF_MIME) return 'pdf';
 
+  const ext = file.name.split('.').pop()?.toLowerCase() || '';
+  if (CODE_EXTENSIONS.has(ext)) return 'text';
+
+  return 'text';
+}
+
+function readAsDataURL(file) {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = String(reader.result);
-      const base64 = dataUrl.split(',')[1] || '';
-      resolve({
-        id: nextAttachmentId(),
-        name: file.name,
-        mimeType: file.type,
-        kind: file.type.startsWith('video/') ? 'video' : 'image',
-        size: file.size,
-        previewUrl: dataUrl,
-        base64,
-      });
-    };
+    reader.onload = () => resolve(String(reader.result));
     reader.onerror = () => reject(new Error(`Couldn't read ${file.name}.`));
     reader.readAsDataURL(file);
   });
+}
+
+function readAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error(`Couldn't read ${file.name}.`));
+    reader.readAsText(file);
+  });
+}
+
+/**
+ * Read a File into an attachment object.
+ *
+ * Shape:
+ *   { id, name, mimeType, kind, size, previewUrl?, base64?, text? }
+ *
+ * - image / video / pdf: `base64` populated, `previewUrl` populated
+ * - text:               `text` populated (base64 omitted)
+ */
+export async function fileToAttachment(file) {
+  if (!isAcceptedFile(file)) {
+    throw new Error(`${file.name} isn't a supported file type.`);
+  }
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    throw new Error(`${file.name} is too large (max ${formatFileSize(MAX_FILE_SIZE_BYTES)}).`);
+  }
+
+  const kind = classifyFile(file);
+  const base = {
+    id: nextAttachmentId(),
+    name: file.name,
+    mimeType: file.type || 'application/octet-stream',
+    kind,
+    size: file.size,
+  };
+
+  if (kind === 'text') {
+    const text = await readAsText(file);
+    return { ...base, text };
+  }
+
+  const dataUrl = await readAsDataURL(file);
+  const base64 = dataUrl.split(',')[1] || '';
+
+  // PDFs don't render in <img> or <video> — no preview
+  const previewUrl = kind === 'image' || kind === 'video' ? dataUrl : undefined;
+
+  return { ...base, base64, previewUrl };
 }

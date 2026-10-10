@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, Wallet, BookOpenCheck, Bell, TriangleAlert, ShieldCheck } from 'lucide-react';
+import { GraduationCap, Wallet, BookOpenCheck, Bell, TriangleAlert, ShieldCheck, Heart } from 'lucide-react';
 import Seo from '../../components/ui/Seo.jsx';
 import StatCard from '../../components/portal/StatCard.jsx';
 import SectionCard from '../../components/portal/SectionCard.jsx';
@@ -89,6 +89,29 @@ export default function StudentDashboard() {
           <span className="font-body text-sm font-semibold text-gold-700">Open &rarr;</span>
         </Link>
       )}
+
+      {/* Foundation quick link */}
+      <Link
+        to="/portal/foundation"
+        className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 shadow-premium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-premium-lg"
+      >
+        <span className="flex items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white shadow-md">
+            <Heart size={18} />
+          </span>
+          <span>
+            <span className="block font-body text-sm font-semibold text-navy-900">
+              Foundation Support
+            </span>
+            <span className="block font-body text-xs text-navy-500">
+              Apply for and track your Foundation applications
+            </span>
+          </span>
+        </span>
+        <span className="font-body text-sm font-semibold text-emerald-700">
+          Open &rarr;
+        </span>
+      </Link>
 
       {/* A. Student identity summary */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

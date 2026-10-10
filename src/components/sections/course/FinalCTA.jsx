@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Download, Info, Sparkles } from 'lucide-react';
+import { Download, Info, Sparkles, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '../../ui';
 import { staggerContainer, fadeUpItem, inViewOnce } from '../../../lib/motion/presets';
 
@@ -7,14 +8,35 @@ const container = staggerContainer(0.12, 0.1);
 
 export default function FinalCTA({ course }) {
   const applyTo = `/apply?courseCode=${course.code}`;
+  const hasBrochure = course.brochureUrl && course.brochureUrl !== '#';
+
+  const divisionLabel =
+    course.division === 'labs'
+      ? 'InnoSpeak Global Labs'
+      : course.division === 'foundation'
+        ? 'InnoSpeak Global Foundation'
+        : 'InnoSpeak Global Academy';
 
   return (
-    <section className="relative overflow-hidden bg-navy-950 py-24 md:py-32">
+    <section className="relative overflow-hidden bg-navy-950 py-16 sm:py-20 lg:py-24">
+      {/* Navy gradient base */}
       <div className="absolute inset-0 bg-gradient-to-b from-navy-900 via-navy-800 to-navy-950" />
 
-      <div className="pointer-events-none absolute -left-40 top-0 h-96 w-96 rounded-full bg-gold-500/15 blur-3xl" aria-hidden="true" />
-      <div className="pointer-events-none absolute -right-40 bottom-0 h-96 w-96 rounded-full bg-gold-500/10 blur-3xl" aria-hidden="true" />
+      {/* Animated gold glows */}
+      <motion.div
+        animate={{ x: [0, 30, -20, 0], y: [0, -20, 20, 0] }}
+        transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
+        className="pointer-events-none absolute -left-40 top-0 h-96 w-96 rounded-full bg-gold-500/15 blur-3xl"
+        aria-hidden="true"
+      />
+      <motion.div
+        animate={{ x: [0, -30, 20, 0], y: [0, 20, -20, 0] }}
+        transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
+        className="pointer-events-none absolute -right-40 bottom-0 h-96 w-96 rounded-full bg-gold-500/10 blur-3xl"
+        aria-hidden="true"
+      />
 
+      {/* Grid pattern */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.04]"
         style={{
@@ -33,51 +55,76 @@ export default function FinalCTA({ course }) {
           viewport={inViewOnce}
           className="mx-auto flex max-w-3xl flex-col items-center text-center"
         >
+          {/* Badge */}
           <motion.span
             variants={fadeUpItem}
-            className="inline-flex items-center gap-2 rounded-full border border-gold-500/30 bg-gold-500/10 px-4 py-2 font-body text-xs font-semibold uppercase tracking-wider text-gold-300 backdrop-blur-sm"
+            className="inline-flex items-center gap-2 rounded-full border border-gold-500/30 bg-gold-500/10 px-4 py-2 font-body text-[11px] font-bold uppercase tracking-wider text-gold-300 backdrop-blur-sm sm:text-xs"
           >
-            <Sparkles size={14} aria-hidden="true" />
+            <Sparkles size={13} aria-hidden="true" />
             Start Your Journey
           </motion.span>
 
+          {/* Headline */}
           <motion.h2
             variants={fadeUpItem}
-            className="mt-6 font-display text-4xl font-bold leading-tight text-white sm:text-5xl"
+            className="mt-6 font-display text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl"
           >
             Ready to Begin Your Learning Journey?
           </motion.h2>
 
+          {/* Description — division-aware */}
           <motion.p
             variants={fadeUpItem}
-            className="mt-6 max-w-2xl font-body text-base leading-relaxed text-navy-200 md:text-lg"
+            className="mt-5 max-w-2xl font-body text-sm leading-[1.7] text-navy-200 sm:mt-6 sm:text-base sm:leading-relaxed lg:text-lg"
           >
-            Join learners from around the world and gain practical skills, professional certification
-            and global opportunities through InnoSpeak Global Academy.
+            Join learners from around the world and gain practical skills, professional
+            certification and global opportunities through {divisionLabel}.
           </motion.p>
 
-          <motion.div variants={fadeUpItem} className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Button to={applyTo} variant="gold" size="lg">
-              Apply Now
-            </Button>
-            <button
-              type="button"
-              className="group inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-4 font-body text-base font-medium text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-500/40 hover:bg-white/10"
+          {/* Primary CTAs */}
+          <motion.div
+            variants={fadeUpItem}
+            className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4"
+          >
+            <Button
+              to={applyTo}
+              variant="gold"
+              size="lg"
+              className="group w-full justify-center sm:w-auto"
             >
-              <Download size={18} aria-hidden="true" />
-              Download Brochure
-            </button>
+              Apply Now
+              <ArrowRight
+                size={16}
+                className="ml-2 transition-transform group-hover:translate-x-1"
+                aria-hidden="true"
+              />
+            </Button>
             <Button
               to="/contact"
               variant="outline"
               size="lg"
               withArrow={false}
-              className="border-white/30 text-white hover:bg-white hover:text-navy-900"
+              className="w-full justify-center border-white/30 text-white hover:bg-white hover:text-navy-900 sm:w-auto"
             >
-              <Info size={18} className="mr-1" />
+              <Info size={16} className="mr-2" aria-hidden="true" />
               Request Information
             </Button>
           </motion.div>
+
+          {/* Secondary CTA */}
+          {hasBrochure && (
+            <motion.div variants={fadeUpItem} className="mt-6">
+              <a
+                href={course.brochureUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 font-body text-xs font-semibold text-navy-300 underline underline-offset-4 transition-colors hover:text-gold-300 sm:text-sm"
+              >
+                <Download size={14} aria-hidden="true" />
+                Download the course brochure
+              </a>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </section>

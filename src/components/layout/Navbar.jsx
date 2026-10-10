@@ -42,6 +42,7 @@ const aboutLinks = [
 
 const topNavLinks = [
   { label: 'Home', to: '/' },
+  { label: 'Compass', to: '/tutor' },
   { label: 'Career Hub', to: '/career-hub' },
   { label: 'Contact', to: '/contact' },
 ];

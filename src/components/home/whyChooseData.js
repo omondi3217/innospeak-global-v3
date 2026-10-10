@@ -9,9 +9,11 @@ export const WHY_CHOOSE_FEATURES = [
   { id: 'community', title: 'Vibrant Community', description: 'Join a growing network of learners, alumni and industry partners across the globe.', icon: 'heart' },
 ];
 
+// Real numbers — kept here for any component that still uses HighlightStrip.
+// The primary Impact section lives in impactData.js.
 export const WHY_CHOOSE_HIGHLIGHTS = [
-  { id: 'programmes', value: 100, suffix: '+', label: 'Programmes Offered' },
-  { id: 'trainers', value: 20, suffix: '+', label: 'Expert Trainers' },
+  { id: 'courses', value: 346, suffix: '', label: 'Live Courses' },
+  { id: 'programs', value: 19, suffix: '', label: 'Programs' },
   { id: 'satisfaction', value: 95, suffix: '%', label: 'Student Satisfaction' },
-  { id: 'countries', value: 10, suffix: '+', label: 'Countries Reached' },
+  { id: 'countries', value: 3, suffix: '', label: 'Countries Reached' },
 ];

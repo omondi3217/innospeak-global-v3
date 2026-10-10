@@ -1,17 +1,32 @@
-import { Link } from 'react-router-dom';
 import Seo from '../components/ui/Seo.jsx';
-import { ArrowRight, BookOpen, BriefcaseBusiness, CalendarDays, Handshake, Lightbulb, Users } from 'lucide-react';
-
-const configs = {
-  research: { title: 'Research & Practice', eyebrow: 'Knowledge Hub', description: 'Explore applied learning ideas, technical practice and evidence-led work that can grow into projects, publications or learning resources.', icon: Lightbulb, items: ['Applied technology projects', 'Teaching and learning practice', 'Technical notes and case studies', 'Innovation challenges'], cta: 'Explore Labs', to: '/labs' },
-  news: { title: 'News & Updates', eyebrow: 'InnoSpeak Updates', description: 'A home for verified platform, programme, learner and community updates. Publish an item here when there is a real update to share.', icon: BookOpen, items: ['Programme announcements', 'Learning platform updates', 'Learner stories', 'Institutional notices'], cta: 'View Programs', to: '/programs' },
-  events: { title: 'Events & Sessions', eyebrow: 'Learning Calendar', description: 'Discover workshops, public talks, practical sessions and learning events. Enrolled learners can also find course sessions inside the E-Learning area.', icon: CalendarDays, items: ['Workshops', 'Guest sessions', 'Practical demonstrations', 'Community events'], cta: 'Open Learning', to: '/learn' },
-  community: { title: 'Community', eyebrow: 'Learn Together', description: 'Build a learning community around discussion, peer support, practical projects and shared opportunities.', icon: Users, items: ['Peer learning', 'Project collaboration', 'Discussion spaces', 'Student initiatives'], cta: 'Start Learning', to: '/academy' },
-  partnerships: { title: 'Partnerships', eyebrow: 'Work With InnoSpeak', description: 'Create practical education, skills and innovation partnerships with organisations, educators, employers and community programmes.', icon: Handshake, items: ['Training partnerships', 'Technology and innovation', 'Industry projects', 'Community skills initiatives'], cta: 'Contact Us', to: '/contact' },
-  careers: { title: 'Careers & Opportunities', eyebrow: 'Career Development', description: 'Connect learning with employability through skills development, portfolio evidence, mentorship and professional opportunities.', icon: BriefcaseBusiness, items: ['Career-ready learning', 'Portfolio development', 'Mentorship', 'Internship and opportunity pathways'], cta: 'Explore Courses', to: '/academy' },
-};
+import { directoryConfigs } from '../components/sections/directory/directoryConfigs.js';
+import DirectoryHero from '../components/sections/directory/DirectoryHero.jsx';
+import DirectoryItems from '../components/sections/directory/DirectoryItems.jsx';
+import DirectoryCTA from '../components/sections/directory/DirectoryCTA.jsx';
 
 export default function ContentDirectory({ type }) {
-  const config = configs[type]; const Icon = config.icon;
-  return <><Seo title={config.title} description={config.description} path={`/${type}`} /><section className="bg-navy-gradient text-white"><div className="container-premium py-20 sm:py-24"><p className="font-body text-xs font-bold uppercase tracking-[0.22em] text-gold-300">{config.eyebrow}</p><h1 className="mt-4 max-w-3xl font-display text-4xl font-bold sm:text-5xl">{config.title}</h1><p className="mt-5 max-w-2xl font-body text-base leading-7 text-white/70">{config.description}</p></div></section><section className="container-premium py-14 sm:py-18"><div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">{config.items.map((item) => <article key={item} className="rounded-2xl border border-navy-100 bg-white p-6 shadow-sm"><Icon size={20} className="text-gold-600"/><h2 className="mt-5 font-display text-lg font-bold text-navy-900">{item}</h2><p className="mt-2 font-body text-sm leading-6 text-navy-500">This area is structured for real content and can be populated from the relevant programme, event, project or community record.</p></article>)}</div><div className="mt-10 rounded-3xl bg-navy-50 p-7 sm:p-9"><h2 className="font-display text-2xl font-bold text-navy-900">Keep the platform connected</h2><p className="mt-2 max-w-2xl font-body text-sm leading-6 text-navy-500">Rather than displaying an empty or fake page, use the connected learning areas below as the next step.</p><Link to={config.to} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-navy-900 px-5 py-3 font-body text-sm font-bold text-white hover:bg-navy-800">{config.cta}<ArrowRight size={15}/></Link></div></section></>;
+  const config = directoryConfigs[type];
+
+  if (!config) {
+    return null;
+  }
+
+  return (
+    <>
+      <Seo
+        title={config.title}
+        description={config.description}
+        path={`/${type}`}
+      />
+
+      <DirectoryHero config={config} />
+
+      <section className="bg-white py-16 sm:py-20">
+        <div className="container-premium">
+          <DirectoryItems config={config} />
+          <DirectoryCTA config={config} />
+        </div>
+      </section>
+    </>
+  );
 }

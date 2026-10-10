@@ -1,122 +1,81 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Wallet, Smartphone, MessageCircle, Copy, Check } from 'lucide-react';
-import { Button } from '../../ui';
+import { Link } from 'react-router-dom';
+import { Award, Sparkles, Heart, Laptop, ArrowRight, LogIn } from 'lucide-react';
 import SectionHeading from '../../ui/SectionHeading.jsx';
-import { staggerContainer, fadeUpItem, inViewOnce } from '../../../lib/motion/presets';
+import { WAYS_TO_GIVE } from './foundationData.js';
 
-const container = staggerContainer(0.12, 0.1);
-
-function CopyableValue({ value }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard API unavailable — fail silently, value is still visible to copy manually.
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      className="mt-4 flex w-full items-center justify-between gap-3 rounded-xl border border-navy-100 bg-cream px-4 py-3 text-left transition-colors duration-200 hover:border-gold-500/50"
-    >
-      <span className="font-mono text-sm font-semibold text-navy-900">{value}</span>
-      <span className="flex items-center gap-1 font-body text-xs font-semibold text-gold-700">
-        {copied ? (
-          <>
-            <Check size={14} aria-hidden="true" />
-            Copied
-          </>
-        ) : (
-          <>
-            <Copy size={14} aria-hidden="true" />
-            Copy
-          </>
-        )}
-      </span>
-    </button>
-  );
-}
+const ICONS = { award: Award, sparkles: Sparkles, heart: Heart, laptop: Laptop };
 
 export default function WaysToGive() {
   return (
-    <section id="ways-to-give" className="scroll-mt-24 bg-cream py-20 md:py-28">
-      <div className="container-premium">
-        <motion.div variants={container} initial="hidden" whileInView="visible" viewport={inViewOnce}>
-          <SectionHeading
-            eyebrow="Ways to Give"
-            title="Support the Mission"
-            subtitle="Choose whichever option works best for you — every contribution, big or small, helps transform a learner's future."
-          />
+    <section id="ways-to-give" className="relative overflow-hidden bg-navy-950 py-20 sm:py-24">
+      <div className="pointer-events-none absolute -left-20 top-1/3 h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 bottom-0 h-72 w-72 rounded-full bg-gold-500/5 blur-3xl" />
 
-          <div className="mt-14 grid grid-cols-1 gap-8 md:grid-cols-3">
-            {/* PayPal */}
-            <motion.div
-              variants={fadeUpItem}
-              whileHover={{ y: -6 }}
-              transition={{ duration: 0.3 }}
-              className="flex h-full flex-col rounded-2xl border border-navy-100 bg-white p-8 shadow-premium transition-shadow duration-300 hover:shadow-premium-lg"
-            >
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-navy-900 text-gold-400">
-                <Wallet size={26} strokeWidth={1.8} aria-hidden="true" />
-              </div>
-              <h3 className="mt-6 font-display text-lg font-bold text-navy-900">Give via PayPal</h3>
-              <p className="mt-3 font-body text-sm leading-relaxed text-navy-600">
-                Send your contribution directly to our PayPal account. Ideal for one-time or
-                international gifts.
-              </p>
-              <CopyableValue value="ogayafredrick3@gmail.com" />
-            </motion.div>
+      <div className="container-premium relative z-10">
+        <SectionHeading
+          eyebrow="Support Our Work"
+          title="Support a Program"
+          subtitle="Your contribution goes to a Foundation program — not an individual. Our team allocates funds where the need is greatest and reports back on the impact."
+          light
+        />
 
-            {/* M-Pesa */}
-            <motion.div
-              variants={fadeUpItem}
-              whileHover={{ y: -6 }}
-              transition={{ duration: 0.3 }}
-              className="flex h-full flex-col rounded-2xl border border-navy-100 bg-white p-8 shadow-premium transition-shadow duration-300 hover:shadow-premium-lg"
-            >
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-navy-900 text-gold-400">
-                <Smartphone size={26} strokeWidth={1.8} aria-hidden="true" />
-              </div>
-              <h3 className="mt-6 font-display text-lg font-bold text-navy-900">Give via M-Pesa</h3>
-              <p className="mt-3 font-body text-sm leading-relaxed text-navy-600">
-                Send directly via M-Pesa — the fastest way to give for supporters in Kenya.
-              </p>
-              <CopyableValue value="+254 716 921 700" />
-            </motion.div>
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+          {WAYS_TO_GIVE.map((way, i) => {
+            const Icon = ICONS[way.icon] || Award;
+            return (
+              <motion.article
+                key={way.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.5, delay: (i % 4) * 0.08 }}
+                className="group flex h-full flex-col rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-400/40 hover:bg-white/10"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-md">
+                  <Icon size={20} strokeWidth={1.8} />
+                </div>
 
-            {/* Contact / Partnership */}
-            <motion.div
-              variants={fadeUpItem}
-              className="flex h-full flex-col rounded-2xl border border-gold-500/20 bg-gradient-to-br from-gold-500/5 to-white p-8 shadow-premium"
-            >
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-navy-900 text-gold-400">
-                <MessageCircle size={26} strokeWidth={1.8} aria-hidden="true" />
-              </div>
-              <h3 className="mt-6 font-display text-lg font-bold text-navy-900">Talk to Our Team</h3>
-              <p className="mt-3 flex-1 font-body text-sm leading-relaxed text-navy-600">
-                Prefer bank transfer, corporate sponsorship, in-kind support or a custom
-                partnership? Reach out and we'll arrange the option that works for you.
-              </p>
-              <Button to="/contact" variant="gold" size="md" className="mt-6 w-full">
-                Fill Out a Form
-              </Button>
-            </motion.div>
-          </div>
+                <h3 className="mt-5 font-display text-base font-bold text-white">
+                  {way.title}
+                </h3>
+                <p className="mt-2 flex-1 font-body text-sm leading-6 text-white/70">
+                  {way.description}
+                </p>
 
-          <motion.p
-            variants={fadeUpItem}
-            className="mx-auto mt-10 max-w-2xl text-center font-body text-xs text-navy-400"
+                <Link
+                  to={way.to}
+                  className="mt-5 inline-flex items-center gap-1.5 font-body text-sm font-bold text-emerald-300 transition-all duration-300 group-hover:gap-2.5"
+                >
+                  {way.cta}
+                  <ArrowRight size={14} />
+                </Link>
+              </motion.article>
+            );
+          })}
+        </div>
+
+        {/* Reassurance line */}
+        <p className="mx-auto mt-10 max-w-2xl text-center font-body text-xs leading-6 text-white/60">
+          Foundation staff manage all beneficiary selection and allocation. Supporters do not
+          have direct contact with learners — this protects privacy and dignity on both sides.
+        </p>
+
+        {/* Sponsor sign-in link */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-10 flex justify-center"
+        >
+          <Link
+            to="/sponsor/signin"
+            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 font-body text-sm font-semibold text-white/80 backdrop-blur-sm transition-all duration-300 hover:border-emerald-400 hover:bg-white/10 hover:text-emerald-300"
           >
-            InnoSpeak Global Foundation is an initiative of InnoSpeak Global. For receipts or
-            questions about a specific contribution, please get in touch through the contact form.
-          </motion.p>
+            <LogIn size={15} />
+            Already a sponsor? Sign in to your portal
+          </Link>
         </motion.div>
       </div>
     </section>

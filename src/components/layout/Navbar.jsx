@@ -119,6 +119,8 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setAboutOpen((v) => !v)}
+              aria-expanded={aboutOpen}
+              aria-controls="about-navigation-menu"
               className={`flex items-center gap-1 ${linkBase} ${linkIdle} ${aboutActive ? linkActive : ''}`}
             >
               About
@@ -127,6 +129,7 @@ export default function Navbar() {
             <AnimatePresence>
               {aboutOpen && (
                 <motion.div
+                  id="about-navigation-menu"
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
@@ -154,6 +157,8 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setExploreOpen((v) => !v)}
+              aria-expanded={exploreOpen}
+              aria-controls="explore-navigation-menu"
               className={`flex items-center gap-1 ${linkBase} ${linkIdle} ${exploreActive ? linkActive : ''}`}
             >
               Explore
@@ -162,6 +167,7 @@ export default function Navbar() {
             <AnimatePresence>
               {exploreOpen && (
                 <motion.div
+                  id="explore-navigation-menu"
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
@@ -215,6 +221,8 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => setAccountOpen((v) => !v)}
+                aria-expanded={accountOpen}
+                aria-controls="account-navigation-menu"
                 className={`flex items-center gap-1.5 ${linkBase} ${linkIdle}`}
               >
                 <UserCircle2 size={17} />
@@ -225,6 +233,7 @@ export default function Navbar() {
               <AnimatePresence>
                 {accountOpen && (
                   <motion.div
+                    id="account-navigation-menu"
                     initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}

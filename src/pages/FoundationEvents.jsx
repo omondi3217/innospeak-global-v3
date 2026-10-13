@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { CalendarDays, Filter, Search } from 'lucide-react';
 import Seo from '../components/ui/Seo.jsx';
+import HeroBackground from '../components/ui/HeroBackground.jsx';
 import EventCard from '../components/sections/foundation/EventCard.jsx';
 import EventModal from '../components/sections/foundation/EventModal.jsx';
 import EventRegistrationForm from '../components/sections/foundation/EventRegistrationForm.jsx';
@@ -73,7 +74,8 @@ export default function FoundationEvents() {
       />
 
       {/* ═══ Hero ═══ */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-navy-900 pt-32 pb-20 text-white md:pt-40 md:pb-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950 pt-32 pb-20 text-white md:pt-40 md:pb-24">
+        <HeroBackground variant="professional" />
         <motion.div
           animate={{ x: [0, 60, -30, 0], y: [0, -40, 30, 0] }}
           transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}

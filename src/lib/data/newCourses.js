@@ -331,7 +331,9 @@ export const NEW_LABS_TRACK_COURSES = [
     instructor: { name: 'To be announced', bio: 'Confirmed before intake.' },
     featured: false, marketability: 'high', version: '1.0', createdAt: '2026-09-24' },
 
-  { code: 'AWS101', name: 'AWS Cloud Practitioner Preparation',
+  // ── Renamed from AWS101 → AWSC101 to avoid collision with
+  //    the AWS101 defined in ./labs/cloudCourses.js ("AWS Fundamentals"). ──
+  { code: 'AWSC101', name: 'AWS Cloud Practitioner Preparation',
     academy: 'InnoSpeak Labs', pathwayId: 'cloud-infrastructure',
     division: 'labs', grouping: 'track', groupingCode: 'LT-CLD',
     category: 'Cloud & Infrastructure', pillar: 'labs',

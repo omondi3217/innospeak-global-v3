@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { KeyRound, TriangleAlert, CheckCircle2 } from 'lucide-react';
 import Seo from '../../components/ui/Seo.jsx';
+import HeroBackground from '../../components/ui/HeroBackground.jsx';
 import { sendPasswordResetEmail } from '../../lib/supabase/auth';
 
 export default function ForgotPassword() {
@@ -30,6 +31,7 @@ export default function ForgotPassword() {
       <Seo title="Reset Password" description="Reset your InnoSpeak Global student portal password." path="/forgot-password" />
 
       <section className="relative flex min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-navy-gradient py-20">
+        <HeroBackground />
         <div className="pointer-events-none absolute inset-0 bg-navy-radial opacity-60" />
         <div className="container-premium relative z-10">
           <motion.div

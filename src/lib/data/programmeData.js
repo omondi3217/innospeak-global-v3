@@ -3350,126 +3350,135 @@ const _BASE_COURSES = [
 ];
 
 // ── V3: migrate base courses, merge new, filter archived ─────
-export const COURSES = filterArchived(
-  migrateCourses([
-    ..._BASE_COURSES,
-    ...NEW_LABS_COURSES,
-    ...NEW_LABS_TRACK_COURSES,
-    ...NEW_ACADEMY_COURSES,
-    ...EXPANSION_ACADEMY_COURSES,
-  ])
-);
 
-// ── Backward-compatible aliases ──────────────────────────────
-/** @deprecated Use COURSES instead. Kept for existing imports. */
+/**
+ * Merge order matters: the first occurrence of a course code wins.
+ * Order is: base catalogue → Labs (cloudCourses, aiCourses, etc.) →
+ * Labs track courses (newCourses) → new Academy → expansion Academy.
+ *
+ * If two files ever define the same code, the earlier one is kept and
+ * the later one is dropped. In dev, the collision is logged so it can
+ * be fixed at the source instead of being silently swallowed.
+ */
+function dedupeByCode(courses) {
+  const seen = new Set();
+  const dropped = [];
+  const result = [];
+  for (const c of courses) {
+    if (!c || !c.code) continue;
+    if (seen.has(c.code)) {
+      dropped.push(c.code);
+      continue;
+    }
+    seen.add(c.code);
+    result.push(c);
+  }
+  return { result, dropped };
+}
+
+const _MERGED = migrateCourses([
+  ..._BASE_COURSES,
+  ...NEW_LABS_COURSES,
+  ...NEW_LABS_TRACK_COURSES,
+  ...NEW_ACADEMY_COURSES,
+  ...EXPANSION_ACADEMY_COURSES,
+]);
+
+const _FILTERED = filterArchived(_MERGED);
+
+const { result: _COURSES_DEDUPED, dropped: _DROPPED_CODES } = dedupeByCode(_FILTERED);
+
+if (import.meta.env?.DEV && _DROPPED_CODES.length > 0) {
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[programmeData] Duplicate course codes dropped (fix at source):',
+    [...new Set(_DROPPED_CODES)]
+  );
+}
+
+export const COURSES = _COURSES_DEDUPED;
+
 export const PROGRAMMES = COURSES;
 
-export const INTAKES = [
-  'January',
-  'May',
-  'September',
-];
+export const INTAKES = ['January', 'May', 'September'];
 
-// ── Helper functions ─────────────────────────────────────────
-
-/** Look up a course by its course code. */
 export function getProgrammeByCode(code) {
-  return COURSES.find((c) => c.code === code) || null;
+  return COURSES.find((course) => course.code === code) || null;
 }
 
-/** Look up a pathway by its id. */
 export function getPathwayById(id) {
-  return PATHWAYS.find((p) => p.id === id) || null;
+  return PATHWAYS.find((pathway) => pathway.id === id) || null;
 }
 
-/** Get the pathway that a course code belongs to. */
 export function getPathwayByCourseCode(code) {
   const course = getProgrammeByCode(code);
   return course ? getPathwayById(course.pathwayId) : null;
 }
 
-/** Get all courses in a pathway. */
 export function getCoursesByPathway(pathwayId) {
-  return COURSES.filter((c) => c.pathwayId === pathwayId);
+  if (!pathwayId) return [];
+  return COURSES.filter((course) => course.pathwayId === pathwayId);
 }
 
-/** Get featured courses. */
 export function getFeaturedCourses() {
-  return COURSES.filter((c) => c.featured);
+  return COURSES.filter((course) => course.featured);
 }
 
-/** Parse the numeric fee from a fee string like "KES 12,500". */
 export function parseFee(fees) {
-  return parseInt(String(fees).replace(/[^0-9]/g, ''), 10) || 0;
+  return Number.parseInt(String(fees).replace(/[^0-9]/g, ''), 10) || 0;
 }
 
-/** Get all Academy courses. */
 export function getAcademyCourses() {
-  return COURSES.filter((c) => (c.division || c.pillar || 'academy') === 'academy');
+  return COURSES.filter((course) => (course.division || course.pillar || 'academy') === 'academy');
 }
 
-/** Get all Labs courses. */
 export function getLabsCourses() {
-  return COURSES.filter((c) => (c.division || c.pillar) === 'labs');
+  return COURSES.filter((course) => (course.division || course.pillar) === 'labs');
 }
 
-/** Get Academy-only pathways. */
 export function getAcademyPathways() {
-  const academyPathwayIds = new Set(getAcademyCourses().map((c) => c.pathwayId));
-  return PATHWAYS.filter((p) => academyPathwayIds.has(p.id));
+  const pathwayIds = new Set(getAcademyCourses().map((course) => course.pathwayId));
+  return PATHWAYS.filter((pathway) => pathwayIds.has(pathway.id));
 }
 
-// ── Programs Academic Foundation helpers ─────────────────────
-
-/** Look up a program (Academy pathway OR Labs track) by its slug. */
 export function getProgramBySlug(slug) {
-  return PATHWAYS.find((p) => p.slug === slug)
-      || TRACKS.find((t) => t.slug === slug)
-      || null;
+  return PATHWAYS.find((pathway) => pathway.slug === slug)
+    || TRACKS.find((track) => track.slug === slug)
+    || null;
 }
 
-/** Programs appropriate for public display. */
 export function getVisiblePrograms() {
-  return PATHWAYS.filter((p) => p.status === 'active' || p.status === 'coming_soon');
+  return PATHWAYS.filter((pathway) => pathway.status === 'active' || pathway.status === 'coming_soon');
 }
 
-/** The real course records for a program. */
 export function getProgramCourses(programId) {
   return getCoursesByPathway(programId);
 }
 
-/** The course codes belonging to a program. */
 export function getProgramCourseIds(programId) {
-  return getProgramCourses(programId).map((c) => c.code);
+  return getProgramCourses(programId).map((course) => course.code);
 }
 
-/** Distinct study modes offered across a program's courses. */
 export function getProgramStudyModes(programId) {
-  return [...new Set(getProgramCourses(programId).map((c) => c.studyMode).filter(Boolean))];
+  return [...new Set(getProgramCourses(programId).map((course) => course.studyMode).filter(Boolean))];
 }
 
-/** Distinct levels offered across a program's courses. */
 export function getProgramLevels(programId) {
-  return [...new Set(getProgramCourses(programId).map((c) => c.level).filter(Boolean))];
+  return [...new Set(getProgramCourses(programId).map((course) => course.level).filter(Boolean))];
 }
 
-/** A human-readable duration summary for a program. */
 export function getProgramDurationSummary(programId) {
-  const durations = [...new Set(getProgramCourses(programId).map((c) => c.duration).filter(Boolean))];
+  const durations = [...new Set(getProgramCourses(programId).map((course) => course.duration).filter(Boolean))];
   if (durations.length === 0) return null;
   if (durations.length === 1) return durations[0];
-  return `${durations[0]} – ${durations[durations.length - 1]}`;
+  return `${durations[0]} - ${durations[durations.length - 1]}`;
 }
 
-/** Decide the right primary CTA for a program. */
 export function getProgramCta(program) {
   if (program.status === 'archived') return { label: 'Archived', to: null, disabled: true };
   if (program.status === 'coming_soon') return { label: 'Coming Soon', to: null, disabled: true };
   if (program.status === 'active' && program.admissionStatus === 'open') {
     return { label: 'Apply Now', to: '/apply', disabled: false };
-  }
-  if (program.status === 'active') {
-    return { label: 'Explore Courses', to: `/programs/${program.slug}`, disabled: false };
   }
   return { label: 'Explore Courses', to: `/programs/${program.slug}`, disabled: false };
 }

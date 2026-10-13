@@ -25,6 +25,7 @@ import {
   UserRound,
 } from 'lucide-react';
 import Seo from '../components/ui/Seo.jsx';
+import HeroBackground from '../components/ui/HeroBackground.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
 import SectionCard from '../components/portal/SectionCard.jsx';
 import { staggerContainer, fadeUpItem, inViewOnce } from '../lib/motion/presets';
@@ -286,6 +287,7 @@ export default function CareerHub() {
 
       {/* ═══ Hero ═══ */}
       <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950 pt-28 pb-16 md:pt-32 md:pb-20">
+        <HeroBackground variant="professional" />
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04]"
           style={{

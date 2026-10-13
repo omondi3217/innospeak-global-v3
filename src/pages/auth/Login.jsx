@@ -180,7 +180,7 @@ export default function Login() {
           </aside>
 
           {/* ═══ Right — Login form ═══ */}
-          <main className="flex flex-col justify-center bg-white px-6 py-12 sm:px-10 lg:px-16">
+          <div className="flex flex-col justify-center bg-white px-6 py-12 sm:px-10 lg:px-16">
             {/* Mobile: small brand header */}
             <div className="mb-8 flex items-center justify-between lg:hidden">
               <Link to="/" className="flex items-center gap-2">
@@ -299,7 +299,7 @@ export default function Login() {
                 </p>
               </motion.div>
             </div>
-          </main>
+          </div>
         </div>
       </div>
     </>

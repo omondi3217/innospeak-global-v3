@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import HeroBackground from '../../ui/HeroBackground.jsx';
 
 /**
  * DirectoryHero — animated emerald hero for ContentDirectory pages.
@@ -14,11 +15,14 @@ const FLOATING_DOTS = [
   { left: '62%', top: '82%', size: 4, delay: 2.1, duration: 9.5 },
 ];
 
-export default function DirectoryHero({ config }) {
+export default function DirectoryHero({ config, type }) {
   const Icon = config.icon;
+  const useProfessionalBackground = ['careers', 'community', 'partnerships'].includes(type);
+  const isEventsPage = type === 'events';
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-navy-900 pt-32 pb-20 text-white md:pt-40 md:pb-24">
+    <section className={`relative overflow-hidden ${isEventsPage ? 'bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950' : 'bg-gradient-to-br from-emerald-900 via-emerald-800 to-navy-900'} pt-32 pb-20 text-white md:pt-40 md:pb-24`}>
+      <HeroBackground variant={useProfessionalBackground || isEventsPage ? 'professional' : 'foundation'} />
       <motion.div
         animate={{ x: [0, 80, -40, 0], y: [0, -60, 40, 0], scale: [1, 1.15, 0.95, 1] }}
         transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}

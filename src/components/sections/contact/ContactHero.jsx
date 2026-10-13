@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { MessageCircle, Sparkles } from 'lucide-react';
 import { staggerContainer, fadeUpItem } from '../../../lib/motion/presets';
+import HeroBackground from '../../ui/HeroBackground.jsx';
 
 const container = staggerContainer(0.12, 0.1);
 
@@ -18,6 +19,7 @@ const FLOATING_DOTS = [
 export default function ContactHero() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-navy-900 pb-24 pt-32 md:pt-40">
+      <HeroBackground variant="professional" />
       {/* Animated gradient orbs */}
       <motion.div
         animate={{ x: [0, 80, -40, 0], y: [0, -60, 40, 0], scale: [1, 1.15, 0.95, 1] }}

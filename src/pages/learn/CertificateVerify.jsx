@@ -5,6 +5,7 @@ import {
   User, BookOpen, Building2, Printer, AlertTriangle, ArrowLeft, Heart, FlaskConical,
 } from 'lucide-react';
 import Seo from '../../components/ui/Seo.jsx';
+import HeroBackground from '../../components/ui/HeroBackground.jsx';
 import SectionCard from '../../components/portal/SectionCard.jsx';
 import { verifyCertificate } from '../../lib/supabase/platform.js';
 
@@ -286,8 +287,9 @@ export default function CertificateVerify() {
         path={`/verify-certificate${initialNumber ? `/${initialNumber}` : ''}`}
       />
 
-      <section className="bg-gradient-to-br from-navy-900 to-navy-800 text-white">
-        <div className="container-premium py-16 sm:py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 to-navy-800 text-white">
+        <HeroBackground />
+        <div className="container-premium relative z-10 py-16 sm:py-20">
           <p className="font-body text-xs font-semibold uppercase tracking-wider text-gold-300">
             Credential Verification
           </p>

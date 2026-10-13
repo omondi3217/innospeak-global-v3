@@ -64,12 +64,13 @@ export async function createPendingPayment({ courseId, courseCode, amount, curre
 /**
  * Initiate M-PESA STK Push via edge function.
  */
-export async function initiateMpesaPayment({ paymentId, courseId, courseCode, amount, currency, phone }) {
+export async function initiateMpesaPayment({ paymentId, studentId, courseId, courseCode, amount, currency, phone }) {
   assertConfigured();
   const { data, error } = await supabase.functions.invoke('mpesa-pay', {
     body: {
       action: 'initiate',
       paymentId,
+      studentId,
       courseId,
       courseCode,
       amount,

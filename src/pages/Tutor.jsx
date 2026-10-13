@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, RotateCcw, PanelLeft, X } from 'lucide-react';
 import Seo from '../components/ui/Seo.jsx';
+import HeroBackground from '../components/ui/HeroBackground.jsx';
 import TutorPanel from '../components/tutor/TutorPanel.jsx';
 import TutorPersonaChips from '../components/tutor/TutorPersonaChips.jsx';
 import TutorSessionsRail from '../components/tutor/TutorSessionsRail.jsx';
@@ -57,6 +58,7 @@ export default function Tutor() {
 
       {/* Top banner */}
       <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950 pt-24 pb-10 md:pt-28 md:pb-12">
+        <HeroBackground variant="learning" />
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04]"
           style={{

@@ -19,6 +19,7 @@ import {
   Tag,
 } from 'lucide-react';
 import Seo from '../../components/ui/Seo.jsx';
+import HeroBackground from '../../components/ui/HeroBackground.jsx';
 import SectionCard from '../../components/portal/SectionCard.jsx';
 import { LoadingState } from '../../components/portal/PortalStates.jsx';
 import ApplyForm from '../../components/career/ApplyForm.jsx';
@@ -96,6 +97,7 @@ function NotFound() {
         path="/career-hub/opportunities"
       />
       <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950 pt-32 pb-24">
+        <HeroBackground variant="professional" />
         <div className="container-premium relative z-10 text-center">
           <BriefcaseBusiness size={40} className="mx-auto text-gold-400" aria-hidden="true" />
           <h1 className="mt-5 font-display text-3xl font-bold text-white sm:text-4xl">
@@ -239,6 +241,7 @@ export default function OpportunityDetail() {
 
       {/* Header */}
       <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950 pt-28 pb-12 md:pt-32 md:pb-16">
+        <HeroBackground variant="professional" />
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04]"
           style={{

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Sparkles, Heart } from 'lucide-react';
+import HeroBackground from '../ui/HeroBackground.jsx';
 
 const FLOATING_DOTS = [
   { left: '15%', top: '20%', size: 5, delay: 0, duration: 8 },
@@ -15,6 +16,7 @@ export default function AdmissionsHero({ currentStep = 1, totalSteps = 7, varian
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-navy-900 text-white">
+      <HeroBackground variant="professional" />
       {/* Animated orbs */}
       <motion.div
         animate={{ x: [0, 60, -30, 0], y: [0, -40, 30, 0], scale: [1, 1.15, 0.95, 1] }}

@@ -69,7 +69,7 @@ export default function PortalShell() {
         {mobileOpen && (
           <div className="fixed inset-0 z-[60] flex lg:hidden">
             <div className="absolute inset-0 bg-navy-950/60" onClick={() => setMobileOpen(false)} />
-            <aside className="relative flex w-72 max-w-[80%] flex-col bg-navy-gradient shadow-premium-lg">
+            <aside role="dialog" aria-modal="true" aria-label="Student navigation" className="relative flex w-72 max-w-[80%] flex-col bg-navy-gradient shadow-premium-lg">
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-6">
                 <div>
                   <p className="font-body text-xs font-semibold uppercase tracking-wider text-gold-300">
@@ -80,6 +80,7 @@ export default function PortalShell() {
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
+                  aria-label="Close student navigation"
                   className="rounded-lg p-1.5 text-white/70 hover:bg-white/10 hover:text-white"
                 >
                   <X size={18} />
@@ -107,6 +108,8 @@ export default function PortalShell() {
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
+                aria-label="Open student navigation"
+                aria-expanded={mobileOpen}
                 className="rounded-lg p-2 text-navy-700 hover:bg-navy-50 lg:hidden"
               >
                 <Menu size={20} />
@@ -128,11 +131,11 @@ export default function PortalShell() {
             </button>
           </header>
 
-          <main className="flex-1 px-5 py-8 sm:px-8 sm:py-10">
+          <div className="flex-1 px-5 py-8 sm:px-8 sm:py-10">
             <div className="mx-auto max-w-6xl">
               <Outlet />
             </div>
-          </main>
+          </div>
         </div>
       </div>
     </div>

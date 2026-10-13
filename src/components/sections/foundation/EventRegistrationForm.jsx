@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Send, User, Mail, Phone, Building, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 /**
  * EventRegistrationForm — modal for registering for a Foundation event.
@@ -104,12 +105,14 @@ export default function EventRegistrationForm({ event, open, onClose, onSubmit }
                   <Check size={32} className="text-emerald-600" strokeWidth={3} />
                 </div>
                 <h3 className="mt-6 font-display text-xl font-bold text-navy-900">
-                  Registration received
+                  Registration details prepared
                 </h3>
                 <p className="mt-3 max-w-sm font-body text-sm leading-6 text-navy-600">
-                  We've received your registration for <strong>{event.title}</strong>. You'll get a confirmation email at{' '}
-                  <span className="font-semibold text-navy-900">{email}</span> shortly.
+                  Your request for <strong>{event.title}</strong> has not been saved online yet. Please contact our team to confirm your place.
                 </p>
+                <Link to="/contact" onClick={handleClose} className="btn-gold mt-6 inline-flex items-center gap-2 px-6 py-3">
+                  Contact the team
+                </Link>
                 <button
                   type="button"
                   onClick={handleClose}

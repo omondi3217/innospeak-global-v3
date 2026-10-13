@@ -2,6 +2,7 @@ import { useParams, Navigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check, Clock, Users, GraduationCap, Award, BookOpen } from 'lucide-react';
 import Seo from '../components/ui/Seo.jsx';
+import HeroBackground from '../components/ui/HeroBackground.jsx';
 import { getGradeBundle } from '../lib/data/gradeBundles.js';
 import { getSchoolLevelById } from '../lib/data/cbeData.js';
 
@@ -23,6 +24,7 @@ export default function GradeDetail() {
 
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950 pt-28 pb-16 md:pt-32 md:pb-20">
+        <HeroBackground />
         <div className="pointer-events-none absolute -top-24 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-gold-500/15 blur-[120px]" />
 
         <div className="container-premium relative z-10">

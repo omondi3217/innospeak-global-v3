@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { GraduationCap, Save, Send, CircleCheck as CheckCircle2, Circle as XCircle, Clock, CircleAlert as AlertCircle, Upload, FileText, X, ArrowRight, User, BookOpen, Briefcase, Globe, Calendar, FileText as DocIcon, Camera } from 'lucide-react';
 import Seo from '../components/ui/Seo.jsx';
+import HeroBackground from '../components/ui/HeroBackground.jsx';
 import TextField from '../components/ui/TextField.jsx';
 import SelectField from '../components/ui/SelectField.jsx';
 import CheckboxField from '../components/ui/CheckboxField.jsx';
@@ -52,6 +53,24 @@ function SectionTitle({ icon: Icon, children }) {
       </span>
       <h2 className="font-display text-lg font-bold text-navy-900">{children}</h2>
     </div>
+  );
+}
+
+function TutorHero() {
+  return (
+    <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950 py-12 text-white sm:py-16">
+      <HeroBackground variant="professional" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/95 via-navy-900/80 to-navy-900/65" />
+      <div className="container-premium relative z-10 mx-auto max-w-3xl text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-gold-300 backdrop-blur-sm">
+          <GraduationCap size={26} />
+        </span>
+        <h1 className="mt-5 font-display text-3xl font-bold text-white sm:text-4xl">Become a Tutor</h1>
+        <p className="mx-auto mt-3 max-w-2xl font-body text-base leading-relaxed text-white/80">
+          Join our community of educators and share your knowledge with learners around the world.
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -278,15 +297,12 @@ export default function BecomeTutor() {
     return (
       <>
         <Seo title="Become a Tutor" description="Apply to become a tutor at InnoSpeak Global." path="/become-tutor" />
-        <div className="mx-auto max-w-2xl px-5 py-20 text-center">
-          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gold-500/10 text-gold-600 ring-1 ring-gold-500/20">
-            <GraduationCap size={30} />
-          </span>
-          <h1 className="mt-6 font-display text-3xl font-bold text-navy-900">Become a Tutor</h1>
-          <p className="mt-3 font-body text-base text-navy-500">
+        <TutorHero />
+        <div className="container-premium max-w-2xl py-10 sm:py-12">
+          <p className="text-center font-body text-base text-navy-500">
             Share your expertise with learners worldwide. Sign in to start your tutor application.
           </p>
-          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link to="/login" className="btn-gold inline-flex items-center gap-2">
               Sign In to Apply
               <ArrowRight size={16} />
@@ -327,18 +343,8 @@ export default function BecomeTutor() {
     <>
       <Seo title="Become a Tutor" description="Apply to become a tutor at InnoSpeak Global." path="/become-tutor" />
 
+      <TutorHero />
       <div className="mx-auto max-w-4xl px-5 py-10 sm:py-14">
-        {/* Header */}
-        <div className="text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gold-500/10 text-gold-600 ring-1 ring-gold-500/20">
-            <GraduationCap size={26} />
-          </span>
-          <h1 className="mt-5 font-display text-3xl font-bold text-navy-900 sm:text-4xl">Become a Tutor</h1>
-          <p className="mt-3 font-body text-base text-navy-500">
-            Join our community of educators and share your knowledge with learners around the world.
-          </p>
-        </div>
-
         {/* Status banner */}
         {appStatus && appStatus !== 'draft' && (
           <motion.div

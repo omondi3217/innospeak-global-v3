@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Compass } from 'lucide-react';
 import useDocumentTitle from '../lib/hooks/useDocumentTitle';
 import Seo from '../components/ui/Seo.jsx';
+import HeroBackground from '../components/ui/HeroBackground.jsx';
 import { buildCourseData } from '../lib/data/courseDetails';
 import {
   getProgrammeByCode,
@@ -39,6 +40,7 @@ function CourseNotFound({ code }) {
         path={`/courses/${code || ''}`}
       />
       <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950 pt-32 pb-24">
+        <HeroBackground />
         <div className="container-premium relative z-10 text-center">
           <Compass size={40} className="mx-auto text-gold-400" aria-hidden="true" />
           <h1 className="mt-5 font-display text-3xl font-bold text-white sm:text-4xl">

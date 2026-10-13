@@ -8,6 +8,7 @@ import {
 import { Button } from '../../ui';
 import { staggerContainer, fadeUpItem, easeOutExpo } from '../../../lib/motion/presets';
 import { PATHWAYS, TRACKS } from '../../../lib/data/programmeData.js';
+import HeroBackground from '../../ui/HeroBackground.jsx';
 
 /**
  * CourseHero — top of every course page.
@@ -45,6 +46,7 @@ export default function CourseHero({ course, grouping: groupingProp }) {
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-cream via-white to-cream pb-14 pt-28 sm:pb-16 sm:pt-32 lg:pb-20 lg:pt-36">
+      <HeroBackground />
       {/* Ambient glows */}
       <div
         className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-gold-500/10 blur-3xl"

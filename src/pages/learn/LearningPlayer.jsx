@@ -612,7 +612,7 @@ export default function LearningPlayer() {
         </aside>
 
         {/* Main lesson area */}
-        <main className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1">
           <div className="mx-auto max-w-3xl">
             <LessonContent
               lesson={lesson}
@@ -721,7 +721,7 @@ export default function LearningPlayer() {
               </motion.div>
             )}
           </div>
-        </main>
+        </div>
 
         {/* Desktop Compass rail */}
         <aside className="sticky top-20 hidden h-[calc(100vh-6rem)] w-80 flex-shrink-0 xl:block">

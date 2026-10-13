@@ -186,7 +186,7 @@ export default function Signup() {
           </aside>
 
           {/* ═══ Right — Signup form ═══ */}
-          <main className="flex flex-col justify-center bg-white px-6 py-12 sm:px-10 lg:px-16">
+          <div className="flex flex-col justify-center bg-white px-6 py-12 sm:px-10 lg:px-16">
             <div className="mb-8 flex items-center justify-between lg:hidden">
               <Link to="/" className="flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-navy-900 text-gold-400">
@@ -345,7 +345,7 @@ export default function Signup() {
                 </motion.div>
               )}
             </div>
-          </main>
+          </div>
         </div>
       </div>
     </>

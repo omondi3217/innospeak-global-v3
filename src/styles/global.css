@@ -9,6 +9,10 @@
 }
 
 @layer base {
+  :focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-gold-500;
+  }
+
   body {
     @apply bg-cream font-sans text-navy-900 antialiased;
   }
@@ -17,6 +21,10 @@
 @layer components {
   .container-premium {
     @apply mx-auto max-w-7xl px-5 sm:px-8 lg:px-12;
+  }
+
+  .skip-link {
+    @apply fixed left-4 top-4 z-[100] -translate-y-20 rounded-lg bg-white px-4 py-3 font-body text-sm font-bold text-navy-900 shadow-premium transition-transform focus:translate-y-0;
   }
 
   .eyebrow {

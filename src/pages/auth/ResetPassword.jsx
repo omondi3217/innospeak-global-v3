@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldCheck, TriangleAlert } from 'lucide-react';
 import Seo from '../../components/ui/Seo.jsx';
+import HeroBackground from '../../components/ui/HeroBackground.jsx';
 import { updateOwnPassword } from '../../lib/supabase/auth';
 
 export default function ResetPassword() {
@@ -41,6 +42,7 @@ export default function ResetPassword() {
       <Seo title="Set New Password" description="Set a new password for your InnoSpeak Global account." path="/reset-password" />
 
       <section className="relative flex min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-navy-gradient py-20">
+        <HeroBackground />
         <div className="pointer-events-none absolute inset-0 bg-navy-radial opacity-60" />
         <div className="container-premium relative z-10">
           <motion.div

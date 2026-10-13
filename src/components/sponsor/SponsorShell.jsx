@@ -142,11 +142,11 @@ export default function SponsorShell() {
             <span className="w-9" />
           </header>
 
-          <main className="flex-1 px-5 py-8 sm:px-8 sm:py-10">
+          <div className="flex-1 px-5 py-8 sm:px-8 sm:py-10">
             <div className="mx-auto max-w-6xl">
               <Outlet />
             </div>
-          </main>
+          </div>
         </div>
       </div>
     </div>

@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import Seo from '../../components/ui/Seo.jsx';
+import HeroBackground from '../../components/ui/HeroBackground.jsx';
 import SectionCard from '../../components/portal/SectionCard.jsx';
 import { staggerContainer, fadeUpItem, inViewOnce } from '../../lib/motion/presets';
 import { listCareerOpportunities } from '../../lib/supabase/platform.js';
@@ -309,6 +310,7 @@ export default function Opportunities() {
 
       {/* Header */}
       <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950 pt-28 pb-12 md:pt-32 md:pb-14">
+        <HeroBackground variant="professional" />
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04]"
           style={{

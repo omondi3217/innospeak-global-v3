@@ -115,7 +115,7 @@ export default function SponsorSignIn() {
           </aside>
 
           {/* Right form */}
-          <main className="flex flex-col justify-center bg-white px-6 py-12 sm:px-10 lg:px-16">
+          <div className="flex flex-col justify-center bg-white px-6 py-12 sm:px-10 lg:px-16">
             <div className="mx-auto w-full max-w-md">
               {/* Mobile brand */}
               <Link to="/foundation" className="mb-8 flex items-center gap-2 lg:hidden">
@@ -221,7 +221,7 @@ export default function SponsorSignIn() {
                 </p>
               </motion.div>
             </div>
-          </main>
+          </div>
         </div>
       </div>
     </>

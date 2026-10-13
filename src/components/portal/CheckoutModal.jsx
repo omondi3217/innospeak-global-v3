@@ -57,6 +57,7 @@ export default function CheckoutModal({ course, open, onClose, onSuccess }) {
 
       const result = await initiateMpesaPayment({
         paymentId: payment.id,
+        studentId: payment.student_id,
         courseId: course.code,
         courseCode: course.code,
         amount,

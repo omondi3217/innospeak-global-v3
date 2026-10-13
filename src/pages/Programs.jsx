@@ -12,6 +12,7 @@ import {
   Compass,
 } from 'lucide-react';
 import Seo from '../components/ui/Seo.jsx';
+import HeroBackground from '../components/ui/HeroBackground.jsx';
 import SectionHeading from '../components/ui/SectionHeading.jsx';
 import { staggerContainer, fadeUpItem, inViewOnce } from '../lib/motion/presets';
 import { COURSES, getCoursesByPathway } from '../lib/data/programmeData.js';
@@ -251,6 +252,7 @@ export default function Programs() {
 
       {/* ═══ Hero ═══ */}
       <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950 pt-28 pb-16 md:pt-32 md:pb-20">
+        <HeroBackground variant="homepage" />
         {/* Grid pattern */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04]"

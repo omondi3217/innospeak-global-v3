@@ -5,28 +5,28 @@ import DirectoryItems from '../components/sections/directory/DirectoryItems.jsx'
 import DirectoryCTA from '../components/sections/directory/DirectoryCTA.jsx';
 
 export default function ContentDirectory({ type }) {
-  const config = directoryConfigs[type];
+	const config = directoryConfigs[type];
 
-  if (!config) {
-    return null;
-  }
+	if (!config) {
+		return null;
+	}
 
-  return (
-    <>
-      <Seo
-        title={config.title}
-        description={config.description}
-        path={`/${type}`}
-      />
+	return (
+		<>
+			<Seo
+				title={config.title}
+				description={config.description}
+				path={`/${type}`}
+			/>
 
-      <DirectoryHero config={config} />
+			<DirectoryHero config={config} type={type} />
 
-      <section className="bg-white py-16 sm:py-20">
-        <div className="container-premium">
-          <DirectoryItems config={config} />
-          <DirectoryCTA config={config} />
-        </div>
-      </section>
-    </>
-  );
+			<section className="bg-white py-16 sm:py-20">
+				<div className="container-premium">
+					<DirectoryItems config={config} />
+					<DirectoryCTA config={config} />
+				</div>
+			</section>
+		</>
+	);
 }

@@ -2,10 +2,12 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FOUNDATION_HERO } from './foundationData.js';
+import HeroBackground from '../../ui/HeroBackground.jsx';
 
 export default function FoundationHero() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-navy-900 pt-32 pb-20 sm:pt-36 sm:pb-24">
+      <HeroBackground />
       {/* Just two slow orbs — intentional, not busy */}
       <motion.div
         animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
